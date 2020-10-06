@@ -161,7 +161,7 @@ public final class MetadatSetter {
     *
     * @param aRow The row from the output file.
   */
-    private static void addMetaData(final String[] aRow) {
+    private static void addMetaData(final String... aRow) {
         final FFprobe ffprobe;
         final FFmpegProbeResult probeResult;
         final FFmpegFormat format;
