@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -124,13 +125,10 @@ public final class MetadatSetter {
     * @param aSource The original headers from the source file.
     * @return Array of header names.
   */
-    private static String[] buildHeaderRow(final String[] aSource) {
+    private static String[] buildHeaderRow(final String... aSource) {
         final String[] headers;
 
-        headers = new String[aSource.length + 4];
-        for (int i = 0; i < aSource.length; i++) {
-            headers[i] = aSource[i];
-        }
+        headers = Arrays.copyOf(aSource, aSource.length + 4);
 
         headers[headers.length - 4] = "media.width";
         headers[headers.length - 3] = "media.height";
@@ -146,13 +144,11 @@ public final class MetadatSetter {
     * @param aSource The original row from the source file.
     * @return The modified CSV row.
   */
-    private static String[] buildARow(final String[] aSource) {
+    private static String[] buildARow(final String... aSource) {
         final String[] aLine;
 
-        aLine = new String[aSource.length + 4];
-        for (int index = 0; index < aSource.length; index++) {
-            aLine[index] = aSource[index];
-        }
+        aLine = Arrays.copyOf(aSource, aSource.length + 4);
+
         if (aLine[6].contains(".") && !aLine[6].contains("~")) {
             addMetaData(aLine);
         }
