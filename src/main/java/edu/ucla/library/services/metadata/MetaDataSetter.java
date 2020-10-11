@@ -23,7 +23,7 @@ import net.bramp.ffmpeg.probe.FFmpegFormat;
 import net.bramp.ffmpeg.probe.FFmpegProbeResult;
 import net.bramp.ffmpeg.probe.FFmpegStream;
 
-public final class MetadatSetter {
+public final class MetaDataSetter {
 
   /**
    * Path to CSV file (or directory of CSV files) to be updated.
@@ -46,9 +46,9 @@ public final class MetadatSetter {
     private static String OUTPUT_PATH;
 
   /**
-   * Private constructor for MetadataSetter class.
+   * Private constructor for MetaDataSetter class.
   */
-    private MetadatSetter() {
+    private MetaDataSetter() {
     }
 
   /**
@@ -64,8 +64,7 @@ public final class MetadatSetter {
         OUTPUT_PATH = args[3];
 
         try {
-            final Path basePath;
-            basePath = FileSystems.getDefault().getPath(CSV_PATH);
+            final Path basePath = FileSystems.getDefault().getPath(CSV_PATH);
             if (Files.isDirectory(basePath)) {
                 Files.find(Paths.get(CSV_PATH), Integer.MAX_VALUE,
                     (filePath, fileAttr) -> fileAttr.isRegularFile()
