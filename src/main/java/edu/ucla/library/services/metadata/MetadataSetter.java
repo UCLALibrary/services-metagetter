@@ -23,7 +23,28 @@ import net.bramp.ffmpeg.probe.FFmpegFormat;
 import net.bramp.ffmpeg.probe.FFmpegProbeResult;
 import net.bramp.ffmpeg.probe.FFmpegStream;
 
-public final class MetaDataSetter {
+public final class MetadataSetter {
+
+  /**
+   * Constant for column position of media.width.
+  */
+    private static final int WIDTH_OFFSET = 4;
+
+  /**
+   * Constant for column position of media.height.
+  */
+    private static final int HEIGHT_OFFSET = 3;
+
+  /**
+   * PConstant for column position of media.duration.
+  */
+    private static final int DURATION_OFFSET = 2;
+
+  /**
+   * Constant for column position of media.format.
+  */
+    private static final int FORMAT_OFFSET = 1;
+
 
   /**
    * Path to CSV file (or directory of CSV files) to be updated.
@@ -48,7 +69,7 @@ public final class MetaDataSetter {
   /**
    * Private constructor for MetaDataSetter class.
   */
-    private MetaDataSetter() {
+    private MetadataSetter() {
     }
 
   /**
@@ -129,10 +150,10 @@ public final class MetaDataSetter {
 
         headers = Arrays.copyOf(aSource, aSource.length + 4);
 
-        headers[headers.length - 4] = "media.width";
-        headers[headers.length - 3] = "media.height";
-        headers[headers.length - 2] = "media.duration";
-        headers[headers.length - 1] = "media.format";
+        headers[headers.length - WIDTH_OFFSET] = "media.width";
+        headers[headers.length - HEIGHT_OFFSET] = "media.height";
+        headers[headers.length - DURATION_OFFSET] = "media.duration";
+        headers[headers.length - FORMAT_OFFSET] = "media.format";
 
         return headers;
     }
@@ -170,18 +191,18 @@ public final class MetaDataSetter {
             probeResult = ffprobe.probe(MEDIA_PATH.concat(getMediaFileName(aRow[6])));
             format = probeResult.getFormat();
 
-            aRow[aRow.length - 2] = String.valueOf(format.duration);
-            aRow[aRow.length - 1] = format.format_name;
+            aRow[aRow.length - DURATION_OFFSET] = String.valueOf(format.duration);
+            aRow[aRow.length - FORMAT_OFFSET] = format.format_name;
 
             if (probeResult.getStreams() != null) {
                 for (int index = 0; index < probeResult.getStreams().size(); index++) {
                     final FFmpegStream stream;
                     stream = probeResult.getStreams().get(index);
                     if (stream.width != 0) {
-                        aRow[aRow.length - 4] = String.valueOf(stream.width);
+                        aRow[aRow.length - WIDTH_OFFSET] = String.valueOf(stream.width);
                     }
                     if (stream.height != 0) {
-                        aRow[aRow.length - 3] = String.valueOf(stream.height);
+                        aRow[aRow.length - HEIGHT_OFFSET] = String.valueOf(stream.height);
                     }
                 }
             }
