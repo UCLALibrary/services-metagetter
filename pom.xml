@@ -70,6 +70,7 @@
     <junit.version>4.13</junit.version>
     <ffmpeg.version>0.6.2</ffmpeg.version>
     <opencsv.version>4.6</opencsv.version>
+    <picoli.version>4.5.1</picoli.version>
   </properties>
 
   <dependencies>
@@ -82,6 +83,11 @@
       <groupId>com.opencsv</groupId>
       <artifactId>opencsv</artifactId>
       <version>${opencsv.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>info.picocli</groupId>
+      <artifactId>picocli</artifactId>
+      <version>${picoli.version}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
