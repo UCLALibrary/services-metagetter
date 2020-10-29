@@ -31,6 +31,16 @@ import picocli.CommandLine.Parameters;
 public final class MetadataSetter implements Callable<Integer> {
 
   /**
+   * File/directory doesn't exist.
+  */
+    public static final int FILE_DOESNT_EXIST = 101;
+
+  /**
+   * File/directory doesn't exist.
+  */
+    public static final int PROBE_DOESNT_EXIST = 102;
+
+  /**
    * Constant for width column name.
   */
     private static final String HEADER_WIDTH = "media.width";
@@ -118,10 +128,18 @@ public final class MetadataSetter implements Callable<Integer> {
   */
     @Override
     public Integer call() {
-        /*CSV_PATH = args[0];
-        MEDIA_PATH = args[1];
-        FFMPEG_PATH = args[2];
-        OUTPUT_PATH = args[3];*/
+        if (!fileDirExists(CSV_PATH)) {
+            return FILE_DOESNT_EXIST;
+        }
+        if (!fileDirExists(MEDIA_PATH)) {
+            return FILE_DOESNT_EXIST;
+        }
+        if (!fileDirExists(OUTPUT_PATH)) {
+            return FILE_DOESNT_EXIST;
+        }
+        if (!validFFProbe(FFMPEG_PATH)) {
+            return PROBE_DOESNT_EXIST;
+        }
 
         try {
             final Path basePath = FileSystems.getDefault().getPath(CSV_PATH);
@@ -140,6 +158,36 @@ public final class MetadataSetter implements Callable<Integer> {
                          + details.getMessage());
         }
         return 0;
+    }
+
+  /**
+   * Verify a directory/file exists.
+   *
+   * @param aFileName pathed name of file to test
+   * @return true/false for file/directory existence.
+  */
+    public static boolean fileDirExists(final String aFileName) {
+        if (!Files.exists(FileSystems.getDefault().getPath(aFileName))) {
+            System.err.println("Directory/file must exist: " + aFileName);
+            return false;
+        }
+        return true;
+    }
+
+  /**
+   * Verify ffprobe executable exists.
+   *
+   * @param aFileName pathed name of executable to test
+   * @return true/false for valid ffprobe executable.
+  */
+    public static boolean validFFProbe(final String aFileName) {
+        try {
+            new FFprobe(FFMPEG_PATH).version();
+        } catch (IOException e) {
+            System.err.println(FFMPEG_PATH + " is not valid path to ffprobe");
+            return false;
+        }
+        return true;
     }
 
   /**
