@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.stream.Stream;
+//import java.util.stream.Stream;
 
 import net.bramp.ffmpeg.FFprobe;
 import net.bramp.ffmpeg.probe.FFmpegFormat;
@@ -154,6 +154,7 @@ public final class MetadataSetter implements Callable<Integer> {
         final List<String[]> output;
         final boolean hasAllMetas;
 
+        System.out.println("working with file " + aPath); //.toFile().getName());
         try {
             reader = new CSVReader(new FileReader(aPath.toFile()));
             input = reader.readAll();
@@ -262,9 +263,11 @@ public final class MetadataSetter implements Callable<Integer> {
     }
 
     private static boolean allMetaFieldsPresent(final String... aHeaderRow) {
-        final Stream<String> stream = Arrays.stream(aHeaderRow);
-        return stream.anyMatch(HEADER_WIDTH::equals) && stream.anyMatch(HEADER_HEIGHT::equals)
-                && stream.anyMatch(HEADER_DURATION::equals) && stream.anyMatch(HEADER_FORMAT::equals);
+        //final Stream<String> stream = Arrays.stream(aHeaderRow);
+        return Arrays.stream(aHeaderRow).anyMatch(HEADER_WIDTH::equals)
+               && Arrays.stream(aHeaderRow).anyMatch(HEADER_HEIGHT::equals)
+               && Arrays.stream(aHeaderRow).anyMatch(HEADER_DURATION::equals)
+               && Arrays.stream(aHeaderRow).anyMatch(HEADER_FORMAT::equals);
     }
   /**
     * Method to extract media file name from CSV column.
