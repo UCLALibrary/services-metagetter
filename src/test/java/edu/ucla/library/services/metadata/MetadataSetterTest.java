@@ -6,7 +6,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
+
+import org.junit.contrib.java.lang.system.SystemErrRule;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -43,9 +46,30 @@ public class MetadataSetterTest {
     private static final String OUTPUT_PATH = "/tmp/";
 
   /**
-   * Path where modified CSV file(s) will be written.
+   * Fake path for testing missing parameters.
+  */
+    private static final String FAKE_PATH = "/not/there/";
+
+  /**
+   * Return code for app success.
   */
     private static final int SUCCESS = 0;
+
+  /**
+   * Return code for nonexitent file/directory.
+  */
+    private static final int NO_FILE = 101;
+
+  /**
+   * Return code for nonexistent ffprope.
+  */
+    private static final int NO_PROBE = 102;
+
+  /**
+   * rule that allows catching System.err output in tests.
+  */
+    @Rule
+    public final SystemErrRule mySystemErrRule = new SystemErrRule().enableLog();
 
   /**
    * Cleans up after a MetadataSetter test.
@@ -70,5 +94,33 @@ public class MetadataSetterTest {
         });
         assertEquals(SUCCESS, statusCode);
         assertTrue(Files.exists(FileSystems.getDefault().getPath(OUTPUT_PATH + CSV_NAME)));
+    }
+
+  /**
+   * Tests nonexistent path for CSV file(s).
+   *
+  */
+    @Test
+    public void testMissingDir() throws Exception {
+        final int statusCode = catchSystemExit(() -> {
+            final String[] args = {FAKE_PATH, MEDIA_PATH, FFMPEG_PATH, OUTPUT_PATH};
+            MetadataSetter.main(args);
+        });
+        assertEquals(NO_FILE, statusCode);
+        assertTrue(mySystemErrRule.getLog().contains("file must exist"));
+    }
+
+  /**
+   * Tests nonexistent path for ffprobe utility.
+   *
+  */
+    @Test
+    public void testMissingProbe() throws Exception {
+        final int statusCode = catchSystemExit(() -> {
+            final String[] args = {CSV_PATH, MEDIA_PATH, FAKE_PATH, OUTPUT_PATH};
+            MetadataSetter.main(args);
+        });
+        assertEquals(NO_PROBE, statusCode);
+        assertTrue(mySystemErrRule.getLog().contains("is not valid path to ffprobe"));
     }
 }
