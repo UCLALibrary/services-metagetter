@@ -139,6 +139,11 @@
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
+          <archive>
+            <manifest>
+              <mainClass>edu.ucla.library.services.metadata.MetadataSetter</mainClass>
+            </manifest>
+          </archive>
         </configuration>
         <executions>
           <execution>
