@@ -4,7 +4,7 @@ package edu.ucla.library.services.metadata;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 
-import java.io.File;
+//import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -36,7 +36,7 @@ public final class MetadataSetter implements Callable<Integer> {
     public static final int FILE_DOESNT_EXIST = 101;
 
   /**
-   * File/directory doesn't exist.
+   * ffprobe executable doesn't exist.
   */
     public static final int PROBE_DOESNT_EXIST = 102;
 
@@ -90,7 +90,9 @@ public final class MetadataSetter implements Callable<Integer> {
   /**
    * Path to media files to be read.
   */
-    @Parameters(index = "1", description = "The parent directory/mount point holding media files.")
+    @Parameters(index = "1", description = "The parent directory/mount point holding media files;"
+        + " this is prepended to file name in CSV.  If file name in CSV is /ephraim/audio/audio.wav, and"
+        + " full path to audio.wav is /mount/dlcs/masters/ephraim/audio/audio.wav, enter /mount/dlcs/masters/")
     private static String MEDIA_PATH;
 
   /**
@@ -144,12 +146,9 @@ public final class MetadataSetter implements Callable<Integer> {
         try {
             final Path basePath = FileSystems.getDefault().getPath(CSV_PATH);
             if (Files.isDirectory(basePath)) {
-                Files.find(Paths.get(CSV_PATH), Integer.MAX_VALUE,
-                    (filePath, fileAttr) -> fileAttr.isRegularFile()
-                     && filePath.toFile()
-                                .getName()
-                                .endsWith("csv"))
-                    .forEach(path -> addMetaToCsv(path));
+                Files.find(Paths.get(CSV_PATH), Integer.MAX_VALUE, (filePath, fileAttr) -> {
+                    return fileAttr.isRegularFile() && filePath.toFile().getName().endsWith("csv");
+                }).forEach(path -> addMetaToCsv(path));
             } else if (Files.isRegularFile(basePath)) {
                 addMetaToCsv(basePath);
             }
@@ -202,7 +201,7 @@ public final class MetadataSetter implements Callable<Integer> {
         final List<String[]> output;
         final boolean hasAllMetas;
 
-        System.out.println("working with file " + aPath); //.toFile().getName());
+        System.out.println("working with file " + aPath);
         try {
             reader = new CSVReader(new FileReader(aPath.toFile()));
             input = reader.readAll();
@@ -220,10 +219,11 @@ public final class MetadataSetter implements Callable<Integer> {
                 output.add(buildARow(hasAllMetas, input.get(index)));
             }
 
-            writer = new CSVWriter(new FileWriter(new File(
-               OUTPUT_PATH.concat(aPath.toFile().getName()))));
-               //OUTPUT_PATH.concat(buildOutputName(
-               //aPath.toFile().getName())))));
+            if (!Files.exists(FileSystems.getDefault().getPath(OUTPUT_PATH))) {
+                Files.createDirectories(Paths.get(OUTPUT_PATH));
+            }
+            writer = new CSVWriter(new FileWriter(
+               Paths.get(OUTPUT_PATH, aPath.toFile().getName()).toFile()));
             for (final String[] aLine: output) {
                 writer.writeNext(aLine);
             }

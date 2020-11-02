@@ -6,7 +6,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.ucla.library</groupId>
   <artifactId>services-metagetter</artifactId>
-  <version>0.0.1--SNAPSHOT</version>
+  <version>0.0.1-SNAPSHOT</version>
   <name>services-metagetter</name>
   <description>A simple app for getting metedata from media files.</description>
   <packaging>jar</packaging>
