@@ -141,7 +141,7 @@ public final class MetadataSetter implements Callable<Integer> {
         }
 
         try {
-            if (!fileDirExists(OUTPUT_PATH)) {
+            if (!Files.exists(FileSystems.getDefault().getPath(OUTPUT_PATH))) {
                 Files.createDirectories(Paths.get(OUTPUT_PATH));
             }
             final Path basePath = FileSystems.getDefault().getPath(CSV_PATH);
