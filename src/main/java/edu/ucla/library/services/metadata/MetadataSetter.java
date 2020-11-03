@@ -282,7 +282,6 @@ public final class MetadataSetter implements Callable<Integer> {
 
         try {
             ffprobe = new FFprobe(FFMPEG_PATH);
-            //probeResult = ffprobe.probe(MEDIA_PATH.concat(getMediaFileName(aRow[6])));
             probeResult = ffprobe.probe(MEDIA_PATH.concat(aRow[6]));
             format = probeResult.getFormat();
 
@@ -308,40 +307,9 @@ public final class MetadataSetter implements Callable<Integer> {
     }
 
     private static boolean allMetaFieldsPresent(final String... aHeaderRow) {
-        //final Stream<String> stream = Arrays.stream(aHeaderRow);
         return Arrays.stream(aHeaderRow).anyMatch(HEADER_WIDTH::equals)
                && Arrays.stream(aHeaderRow).anyMatch(HEADER_HEIGHT::equals)
                && Arrays.stream(aHeaderRow).anyMatch(HEADER_DURATION::equals)
                && Arrays.stream(aHeaderRow).anyMatch(HEADER_FORMAT::equals);
     }
-  /**
-    * Method to extract media file name from CSV column.
-    *
-    * @param aSource The original column entry from the source file.
-    * @return Name of the media file
-  */
-    /*private static String getMediaFileName(final String aSource) {
-        final StringBuilder mediaFile;
-
-        if (aSource.contains(File.separator)) {
-            mediaFile = new StringBuilder(aSource
-                      .substring(aSource.lastIndexOf(File.separator) + 1));
-        } else {
-            mediaFile = new StringBuilder(aSource);
-        }
-
-        return mediaFile.toString();
-    }*/
-
-  /**
-    * Method to generate name for output file.
-    *
-    * @param aInputName The original name of the source file.
-    * @return The name of the output file.
-  */
-    /*private static String buildOutputName(final String aInputName) {
-        return new StringBuilder(aInputName)
-              .insert(aInputName.lastIndexOf(".csv"), ".meta").toString();
-    }*/
-
 }

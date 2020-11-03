@@ -66,7 +66,7 @@ public class MetadataSetterTest {
     private static final int NO_PROBE = 102;
 
   /**
-   * rule that allows catching System.err output in tests.
+   * Rule that allows catching System.err output in tests.
   */
     @Rule
     public final SystemErrRule mySystemErrRule = new SystemErrRule().enableLog();
