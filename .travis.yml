@@ -1,6 +1,6 @@
-before_install:
-  - sudo apt-get update
-  - sudo apt-get -y install ffmpeg
 language: java
 jdk:
   - openjdk11
+before_install:
+  - sudo apt-get update
+  - sudo apt-get -y install ffmpeg

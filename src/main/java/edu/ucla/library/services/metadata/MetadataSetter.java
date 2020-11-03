@@ -136,14 +136,14 @@ public final class MetadataSetter implements Callable<Integer> {
         if (!fileDirExists(MEDIA_PATH)) {
             return FILE_DOESNT_EXIST;
         }
-        if (!fileDirExists(OUTPUT_PATH)) {
-            return FILE_DOESNT_EXIST;
-        }
         if (!validFFProbe(FFMPEG_PATH)) {
             return PROBE_DOESNT_EXIST;
         }
 
         try {
+            if (!fileDirExists(OUTPUT_PATH)) {
+                Files.createDirectories(Paths.get(OUTPUT_PATH));
+            }
             final Path basePath = FileSystems.getDefault().getPath(CSV_PATH);
             if (Files.isDirectory(basePath)) {
                 Files.find(Paths.get(CSV_PATH), Integer.MAX_VALUE, (filePath, fileAttr) -> {
@@ -219,9 +219,6 @@ public final class MetadataSetter implements Callable<Integer> {
                 output.add(buildARow(hasAllMetas, input.get(index)));
             }
 
-            if (!Files.exists(FileSystems.getDefault().getPath(OUTPUT_PATH))) {
-                Files.createDirectories(Paths.get(OUTPUT_PATH));
-            }
             writer = new CSVWriter(new FileWriter(
                Paths.get(OUTPUT_PATH, aPath.toFile().getName()).toFile()));
             for (final String[] aLine: output) {
