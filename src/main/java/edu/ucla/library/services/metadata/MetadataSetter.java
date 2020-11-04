@@ -108,7 +108,7 @@ public final class MetadataSetter implements Callable<Integer> {
     private static String OUTPUT_PATH;
 
   /**
-   * Private constructor for MetaDataSetter class.
+   * Private constructor for MetadataSetter class.
   */
     private MetadataSetter() {
     }
@@ -264,7 +264,7 @@ public final class MetadataSetter implements Callable<Integer> {
         line = Arrays.copyOf(aSource, aHasColumns ? aSource.length : aSource.length + 4);
 
         if (line[fileColumn].contains(".") && !line[fileColumn].contains("~")) {
-            addMetaData(line);
+            addMetadata(line);
         }
 
         return line;
@@ -275,7 +275,7 @@ public final class MetadataSetter implements Callable<Integer> {
     *
     * @param aRow The row from the output file.
   */
-    private static void addMetaData(final String... aRow) {
+    private static void addMetadata(final String... aRow) {
         final FFprobe ffprobe;
         final FFmpegProbeResult probeResult;
         final FFmpegFormat format;
