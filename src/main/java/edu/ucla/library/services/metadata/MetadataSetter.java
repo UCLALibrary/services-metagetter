@@ -1,7 +1,6 @@
 
 package edu.ucla.library.services.metadata;
 
-//import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -13,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
-//import java.util.stream.Stream;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
@@ -107,6 +105,11 @@ public final class MetadataSetter implements Callable<Integer> {
     private static String OUTPUT_PATH;
 
     /**
+     * Header metadata from the CSV file.
+     */
+    private static CsvHeaders myCsvHeaders;
+
+    /**
      * Private constructor for MetadataSetter class.
      */
     private MetadataSetter() {
@@ -162,7 +165,7 @@ public final class MetadataSetter implements Callable<Integer> {
      * @param aFileName pathed name of file to test
      * @return true/false for file/directory existence.
      */
-    public static boolean fileDirExists(final String aFileName) {
+    public boolean fileDirExists(final String aFileName) {
         if (!Files.exists(FileSystems.getDefault().getPath(aFileName))) {
             System.err.println("Directory/file must exist: " + aFileName);
             return false;
@@ -176,7 +179,7 @@ public final class MetadataSetter implements Callable<Integer> {
      * @param aFileName pathed name of executable to test
      * @return true/false for valid ffprobe executable.
      */
-    public static boolean validFFProbe(final String aFileName) {
+    public boolean validFFProbe(final String aFileName) {
         try {
             new FFprobe(FFMPEG_PATH).version();
         } catch (final IOException e) {
@@ -205,7 +208,9 @@ public final class MetadataSetter implements Callable<Integer> {
             reader.close();
 
             output = new ArrayList<>(input.size());
+            myCsvHeaders = new CsvHeaders(input.get(0));
             hasAllMetas = allMetaFieldsPresent(input.get(0));
+
             if (!hasAllMetas) {
                 output.add(buildHeaderRow(input.get(0)));
             } else {
@@ -277,7 +282,7 @@ public final class MetadataSetter implements Callable<Integer> {
 
         try {
             ffprobe = new FFprobe(FFMPEG_PATH);
-            probeResult = ffprobe.probe(MEDIA_PATH.concat(aRow[6]));
+            probeResult = ffprobe.probe(MEDIA_PATH.concat(aRow[myCsvHeaders.getFileNameIndex()]));
             format = probeResult.getFormat();
 
             aRow[aRow.length - DURATION_OFFSET] = String.valueOf(format.duration);
@@ -300,6 +305,12 @@ public final class MetadataSetter implements Callable<Integer> {
         }
     }
 
+    /**
+     * Tests whether all the expected metadata fields are present.
+     *
+     * @param aHeaderRow A CSV header row
+     * @return True if all required metadata fields are present; else, false
+     */
     private static boolean allMetaFieldsPresent(final String... aHeaderRow) {
         return Arrays.stream(aHeaderRow).anyMatch(HEADER_WIDTH::equals) &&
                 Arrays.stream(aHeaderRow).anyMatch(HEADER_HEIGHT::equals) &&
