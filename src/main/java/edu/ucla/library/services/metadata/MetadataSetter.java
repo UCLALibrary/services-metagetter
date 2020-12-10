@@ -252,7 +252,7 @@ public final class MetadataSetter implements Callable<Integer> {
     }
 
     /**
-     * Method to copy/modify data rows from sourve file.
+     * Method to copy/modify data rows from source file.
      *
      * @param aSource The original row from the source file.
      * @return The modified CSV row.
