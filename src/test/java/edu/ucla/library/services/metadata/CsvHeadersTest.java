@@ -65,6 +65,7 @@ public class CsvHeadersTest {
     @Test
     public void testHasFileNameIndexWithMissingFileName() throws Exception {
         final CSVReader csvReader = new CSVReader(new FileReader(MISSING_FILE_NAME_CSV));
+
         assertFalse(new CsvHeaders(csvReader.readNext()).hasFileNameIndex());
         csvReader.close();
     }
