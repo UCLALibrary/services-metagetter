@@ -16,7 +16,7 @@ public class CsvHeaders {
      *
      * @param aCsvHeaderRow The header row from the CSV file
      */
-    public CsvHeaders(final String[] aCsvHeaderRow) {
+    public CsvHeaders(final String... aCsvHeaderRow) {
         for (int index = 0; index < aCsvHeaderRow.length; index++) {
             switch (aCsvHeaderRow[index]) {
                 case "File Name":
