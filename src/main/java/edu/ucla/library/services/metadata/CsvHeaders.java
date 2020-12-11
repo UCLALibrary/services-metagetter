@@ -12,6 +12,11 @@ public class CsvHeaders {
     private int myFileNameIndex = -1;
 
     /**
+     * The index position of the 'Object Type' column.
+     */
+    private int myObjectTypeIndex = -1;
+
+    /**
      * Creates a new CSV headers object.
      *
      * @param aCsvHeaderRow The header row from the CSV file
@@ -21,6 +26,9 @@ public class CsvHeaders {
             switch (aCsvHeaderRow[index]) {
                 case "File Name":
                     myFileNameIndex = index;
+                    break;
+                case "Object Type":
+                    myObjectTypeIndex = index;
                     break;
                 // Other cases for the A/V fields we add (when we work that ticket)
                 default:
@@ -45,5 +53,23 @@ public class CsvHeaders {
      */
     public boolean hasFileNameIndex() {
         return myFileNameIndex != -1;
+    }
+
+    /**
+     * Gets the index position of the 'Object Type' column from the CSV's header row.
+     *
+     * @return The index position of the 'Object Type' column
+     */
+    public int getObjectTypeIndex() {
+        return myObjectTypeIndex;
+    }
+
+    /**
+     * Whether the CSV metadata has a 'Object Type' column.
+     *
+     * @return True if a 'Object Type' column was found; else, false
+     */
+    public boolean hasObjectTypeIndex() {
+        return myObjectTypeIndex != -1;
     }
 }

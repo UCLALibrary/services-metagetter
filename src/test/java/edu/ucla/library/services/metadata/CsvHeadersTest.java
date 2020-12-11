@@ -14,9 +14,11 @@ import com.opencsv.CSVReader;
  */
 public class CsvHeadersTest {
 
-    private static final String GOOD_CSV = "src/test/resources/sales.csv";
+    private static final String TEST_FIXTURES_DIR = "src/test/resources/";
 
-    private static final String MISSING_FILE_NAME_CSV = "src/test/resources/missing-file-name.csv";
+    private static final String GOOD_CSV = TEST_FIXTURES_DIR + "good_csvs/sales.csv";
+
+    private static final String MISSING_FILE_NAME_CSV = TEST_FIXTURES_DIR + "bad_csvs/missing-file-name.csv";
 
     /**
      * Tests getFileNameIndex().

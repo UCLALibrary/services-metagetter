@@ -3,6 +3,9 @@ dependency-reduced-pom.xml
 # Compiled class file
 *.class
 
+# Generated classes
+src/main/generated
+
 # Log file
 *.log
 
