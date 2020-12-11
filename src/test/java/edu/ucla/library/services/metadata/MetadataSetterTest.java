@@ -16,7 +16,6 @@ import org.junit.contrib.java.lang.system.SystemErrRule;
 
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
-import info.freelibrary.util.MessageCodes;
 
 /**
  * Unit tests for MetadataSetter.java
