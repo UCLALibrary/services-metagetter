@@ -45,7 +45,7 @@ public class MetadataSetterTest {
      * A program argument that includes two media mounts (or directories) separated by a comma. If the program is
      * operating as it should, both paths will be checked for the media file from the CSV's 'File Name' column.
      */
-    private static final String COMBINED_MEDIA_PATH = TEST_FIXTURES_DIR + "media2/," + MEDIA_PATH;
+    private static final String COMBINED_MEDIA_PATHS = TEST_FIXTURES_DIR + "media2/," + MEDIA_PATH;
 
     /**
      * Path to ffmpeg probe utility.
@@ -108,7 +108,7 @@ public class MetadataSetterTest {
     @Test
     public void testGetMetaWithFileMultipleMediaPaths() throws Exception {
         final int statusCode = catchSystemExit(() -> {
-            MetadataSetter.main(new String[] { CSV_PATH + CSV_NAME, COMBINED_MEDIA_PATH, FFMPEG_PATH, OUTPUT_PATH });
+            MetadataSetter.main(new String[] { CSV_PATH + CSV_NAME, COMBINED_MEDIA_PATHS, FFMPEG_PATH, OUTPUT_PATH });
         });
         assertEquals(ExitCodes.SUCCESS, statusCode);
         assertTrue(Files.exists(FileSystems.getDefault().getPath(OUTPUT_PATH + CSV_NAME)));
@@ -120,7 +120,7 @@ public class MetadataSetterTest {
     @Test
     public void testGetMetaWithDirWithMultipleMediaPaths() throws Exception {
         final int statusCode = catchSystemExit(() -> {
-            MetadataSetter.main(new String[] { CSV_PATH, COMBINED_MEDIA_PATH, FFMPEG_PATH, OUTPUT_PATH });
+            MetadataSetter.main(new String[] { CSV_PATH, COMBINED_MEDIA_PATHS, FFMPEG_PATH, OUTPUT_PATH });
         });
         assertEquals(ExitCodes.SUCCESS, statusCode);
         assertTrue(Files.exists(FileSystems.getDefault().getPath(OUTPUT_PATH + CSV_NAME)));
