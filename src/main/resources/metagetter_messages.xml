@@ -16,7 +16,8 @@
   <entry key="MG-103">Adding A/V metadata to supplied CSV file: {}</entry>
   <entry key="MG-104">Problem reading/writing CSV file: {}</entry>
   <entry key="MG-105">File '{}' not found in following paths: {}</entry>
-  <entry key="MG-106">Problem reading media file: {}</entry>
+  <entry key="MG-106">Problem reading media file ({}): {}</entry>
   <entry key="MG-107">Supplied CSV file does not contain the required 'File Name' column</entry>
   <entry key="MG-108">File does not have the expected extension indicating media type: {}</entry>
+  <entry key="MG-109">Run FFProbe against the file to see a more detailed error message.</entry>
 </properties>
