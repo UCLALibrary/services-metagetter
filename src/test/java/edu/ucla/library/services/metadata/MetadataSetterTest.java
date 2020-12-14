@@ -42,8 +42,8 @@ public class MetadataSetterTest {
     private static final String MEDIA_PATH = TEST_FIXTURES_DIR + "media/";
 
     /**
-     * A path that includes two media mounts (or directories) separated by a comma. If the program is operating as it
-     * should, both paths will be checked for the media file from the CSV's 'File Name' column.
+     * A program argument that includes two media mounts (or directories) separated by a comma. If the program is
+     * operating as it should, both paths will be checked for the media file from the CSV's 'File Name' column.
      */
     private static final String COMBINED_MEDIA_PATH = TEST_FIXTURES_DIR + "media2/," + MEDIA_PATH;
 
