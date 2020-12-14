@@ -1,6 +1,8 @@
 
 package edu.ucla.library.services.metadata;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,6 +18,11 @@ import java.util.concurrent.Callable;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 
+import info.freelibrary.util.I18nRuntimeException;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
+import info.freelibrary.util.StringUtils;
+
 import net.bramp.ffmpeg.FFprobe;
 import net.bramp.ffmpeg.probe.FFmpegFormat;
 import net.bramp.ffmpeg.probe.FFmpegProbeResult;
@@ -28,15 +35,7 @@ import picocli.CommandLine.Parameters;
  */
 public final class MetadataSetter implements Callable<Integer> {
 
-    /**
-     * File/directory doesn't exist.
-     */
-    public static final int FILE_DOESNT_EXIST = 101;
-
-    /**
-     * ffprobe executable doesn't exist.
-     */
-    public static final int PROBE_DOESNT_EXIST = 102;
+    private static final Logger LOGGER = LoggerFactory.getLogger(MetadataSetter.class, MessageCodes.BUNDLE);
 
     /**
      * Constant for width column name.
@@ -82,32 +81,36 @@ public final class MetadataSetter implements Callable<Integer> {
      * Path to CSV file (or directory of CSV files) to be updated.
      */
     @Parameters(index = "0", description = "The CSV file/directory to process.")
-    private static String CSV_PATH;
+    private String myCsvPath;
 
     /**
      * Path to media files to be read.
      */
-    @Parameters(index = "1", description = "The parent directory/mount point holding media files;" +
-            " this is prepended to file name in CSV.  If file name in CSV is /ephraim/audio/audio.wav, and" +
-            " full path to audio.wav is /mount/dlcs/masters/ephraim/audio/audio.wav, enter /mount/dlcs/masters/")
-    private static String MEDIA_PATH;
+    @Parameters(index = "1", split = "\\,", splitSynopsisLabel = ",",
+            description = {
+                "The parent directory/mount point holding media files (this is prepended the file name in the CSV). ",
+                "For example: If file name in the CSV is /ephraim/audio/audio.wav and the full path to audio.wav is ",
+                "/mount/dlcs/masters/ephraim/audio/audio.wav, then enter \"/mount/dlcs/masters/\". If a CSV file has ",
+                "multiple possible directories/mount points, separate them in your input with a comma. For example: ",
+                "\"/mount/dlcs/masters/,/mount/dlcs/othermasters\"." })
+    private List<String> myMediaPath;
 
     /**
      * Path to ffmpeg probe utility.
      */
     @Parameters(index = "2", description = "The path to ffprobe executable.")
-    private static String FFMPEG_PATH;
+    private String myFfmpegPath;
 
     /**
      * Path where modified CSV file(s) will be written.
      */
     @Parameters(index = "3", description = "The directory where output file(s) are written.")
-    private static String OUTPUT_PATH;
+    private String myOutputPath;
 
     /**
      * Header metadata from the CSV file.
      */
-    private static CsvHeaders myCsvHeaders;
+    private CsvHeaders myCsvHeaders;
 
     /**
      * Private constructor for MetadataSetter class.
@@ -122,8 +125,7 @@ public final class MetadataSetter implements Callable<Integer> {
      */
     @SuppressWarnings("uncommentedmain")
     public static void main(final String[] args) {
-        final int exitCode = new CommandLine(new MetadataSetter()).execute(args);
-        System.exit(exitCode);
+        System.exit(new CommandLine(new MetadataSetter()).execute(args));
     }
 
     /**
@@ -131,61 +133,79 @@ public final class MetadataSetter implements Callable<Integer> {
      */
     @Override
     public Integer call() {
-        if (!fileDirExists(CSV_PATH)) {
-            return FILE_DOESNT_EXIST;
+        if (!fileDirExists(Arrays.asList(myCsvPath))) {
+            return ExitCodes.FILE_DOESNT_EXIST;
         }
-        if (!fileDirExists(MEDIA_PATH)) {
-            return FILE_DOESNT_EXIST;
+        if (!fileDirExists(myMediaPath)) {
+            return ExitCodes.FILE_DOESNT_EXIST;
         }
-        if (!validFFProbe(FFMPEG_PATH)) {
-            return PROBE_DOESNT_EXIST;
+        if (!validFFProbe(myFfmpegPath)) {
+            return ExitCodes.PROBE_DOESNT_EXIST;
         }
 
         try {
-            if (!Files.exists(FileSystems.getDefault().getPath(OUTPUT_PATH))) {
-                Files.createDirectories(Paths.get(OUTPUT_PATH));
+            final Path basePath = FileSystems.getDefault().getPath(myCsvPath);
+
+            if (!Files.exists(FileSystems.getDefault().getPath(myOutputPath))) {
+                Files.createDirectories(Paths.get(myOutputPath));
             }
-            final Path basePath = FileSystems.getDefault().getPath(CSV_PATH);
+
             if (Files.isDirectory(basePath)) {
-                Files.find(Paths.get(CSV_PATH), Integer.MAX_VALUE,
+                Files.find(Paths.get(myCsvPath), Integer.MAX_VALUE,
                         (filePath, fileAttr) -> fileAttr.isRegularFile() && filePath.toFile().getName().endsWith("csv"))
-                        .forEach(MetadataSetter::addMetaToCsv);
+                        .forEach(this::addMetaToCsv);
             } else if (Files.isRegularFile(basePath)) {
                 addMetaToCsv(basePath);
             }
-        } catch (final IOException details) {
-            System.err.println("Problem reading file/walking file directory: " + details.getMessage());
+        } catch (final I18nRuntimeException details) { // Exceptions from addMetaToCsv()
+            System.err.println(details.getMessage());
+            return ExitCodes.READ_WRITE_ERROR;
+        } catch (final IOException details) { // IOException from Files' methods
+            System.err.println(LOGGER.getMessage(MessageCodes.MG_101, details.getMessage()));
+            return ExitCodes.READ_WRITE_ERROR;
         }
-        return 0;
+
+        return ExitCodes.SUCCESS;
     }
 
     /**
-     * Verify a directory/file exists.
+     * Verify a directory or file exists.
      *
-     * @param aFileName pathed name of file to test
-     * @return true/false for file/directory existence.
+     * @param aFilePathList A list of file paths to test
+     * @return True/false for file or directory's existence
      */
-    public boolean fileDirExists(final String aFileName) {
-        if (!Files.exists(FileSystems.getDefault().getPath(aFileName))) {
-            System.err.println("Directory/file must exist: " + aFileName);
+    public boolean fileDirExists(final List<String> aFilePathList) {
+        final StringBuilder stringBuilder = new StringBuilder();
+        final int length;
+
+        for (final String filePath : aFilePathList) {
+            if (!Files.exists(FileSystems.getDefault().getPath(filePath))) {
+                stringBuilder.append(LOGGER.getMessage(MessageCodes.MG_100, filePath)).append(System.lineSeparator());
+            }
+        }
+
+        if ((length = stringBuilder.length()) == 0) {
+            return true;
+        } else {
+            System.err.println(stringBuilder.delete(length - System.lineSeparator().length(), length).toString());
             return false;
         }
-        return true;
     }
 
     /**
      * Verify ffprobe executable exists.
      *
-     * @param aFileName pathed name of executable to test
-     * @return true/false for valid ffprobe executable.
+     * @param aFileName The file path of executable
+     * @return True/false for valid ffprobe executable.
      */
     public boolean validFFProbe(final String aFileName) {
         try {
-            new FFprobe(FFMPEG_PATH).version();
-        } catch (final IOException e) {
-            System.err.println(FFMPEG_PATH + " is not valid path to ffprobe");
+            new FFprobe(myFfmpegPath).version();
+        } catch (final IOException details) {
+            System.err.println(LOGGER.getMessage(MessageCodes.MG_102, myFfmpegPath));
             return false;
         }
+
         return true;
     }
 
@@ -194,22 +214,18 @@ public final class MetadataSetter implements Callable<Integer> {
      *
      * @param aPath Path to file to be read and copied/updated
      */
-    private static void addMetaToCsv(final Path aPath) {
-        final CSVReader reader;
-        final CSVWriter writer;
-        final List<String[]> input;
-        final List<String[]> output;
-        final boolean hasAllMetas;
+    private void addMetaToCsv(final Path aPath) throws I18nRuntimeException {
+        final File outputFile = Paths.get(myOutputPath, aPath.toFile().getName()).toFile();
 
-        System.out.println("working with file " + aPath);
-        try {
-            reader = new CSVReader(new FileReader(aPath.toFile()));
-            input = reader.readAll();
-            reader.close();
+        try (CSVReader reader = new CSVReader(new FileReader(aPath.toFile()));
+                CSVWriter writer = new CSVWriter(new FileWriter(outputFile))) {
+            final List<String[]> input = reader.readAll();
+            final List<String[]> output = new ArrayList<>(input.size());
+            final boolean hasAllMetas = allMetaFieldsPresent(input.get(0));
 
-            output = new ArrayList<>(input.size());
+            System.out.println(LOGGER.getMessage(MessageCodes.MG_103, aPath));
+
             myCsvHeaders = new CsvHeaders(input.get(0));
-            hasAllMetas = allMetaFieldsPresent(input.get(0));
 
             if (!hasAllMetas) {
                 output.add(buildHeaderRow(input.get(0)));
@@ -221,14 +237,13 @@ public final class MetadataSetter implements Callable<Integer> {
                 output.add(buildARow(hasAllMetas, input.get(index)));
             }
 
-            writer = new CSVWriter(new FileWriter(Paths.get(OUTPUT_PATH, aPath.toFile().getName()).toFile()));
-            for (final String[] aLine : output) {
-                writer.writeNext(aLine);
+            for (final String[] row : output) {
+                writer.writeNext(row);
             }
-
-            writer.close();
-        } catch (final IOException details) {
-            System.err.println("Problem reading/writing csv file: " + details.getMessage());
+        } catch (final IOException details) { // Catches FileNotFoundException(s) and other IOException(s), too
+            throw new I18nRuntimeException(details, MessageCodes.BUNDLE, MessageCodes.MG_104, details.getMessage());
+        } catch (final FileFormatException details) {
+            throw new I18nRuntimeException(details, MessageCodes.BUNDLE, MessageCodes.MG_000, details.getMessage());
         }
     }
 
@@ -238,10 +253,8 @@ public final class MetadataSetter implements Callable<Integer> {
      * @param aSource The original headers from the source file.
      * @return Array of header names.
      */
-    private static String[] buildHeaderRow(final String... aSource) {
-        final String[] headers;
-
-        headers = Arrays.copyOf(aSource, aSource.length + 4);
+    private String[] buildHeaderRow(final String... aSource) {
+        final String[] headers = Arrays.copyOf(aSource, aSource.length + 4);
 
         headers[headers.length - WIDTH_OFFSET] = HEADER_WIDTH;
         headers[headers.length - HEIGHT_OFFSET] = HEADER_HEIGHT;
@@ -254,44 +267,63 @@ public final class MetadataSetter implements Callable<Integer> {
     /**
      * Method to copy/modify data rows from source file.
      *
-     * @param aSource The original row from the source file.
-     * @return The modified CSV row.
+     * @param aSource The original row from the source file
+     * @return The modified CSV row
+     * @throws FileNotFoundException If a media file could not be found
      */
-    private static String[] buildARow(final boolean aHasColumns, final String... aSource) {
-        final int fileColumn = 6;
-        final String[] line;
+    private String[] buildARow(final boolean aHasColumns, final String... aSource)
+            throws FileNotFoundException, IOException, FileFormatException {
+        final int fileColumnIndex = myCsvHeaders.getFileNameIndex();
+        final String[] line = Arrays.copyOf(aSource, aHasColumns ? aSource.length : aSource.length + 4);
+        final String fileName = line[fileColumnIndex];
 
-        line = Arrays.copyOf(aSource, aHasColumns ? aSource.length : aSource.length + 4);
+        if (fileColumnIndex != -1) {
+            if (fileExpected(line)) {
+                if (!fileName.contains(".")) {
+                    throw new FileFormatException(line[fileColumnIndex]); // Check that file has an extension
+                }
 
-        if (line[fileColumn].contains(".") && !line[fileColumn].contains("~")) {
-            addMetadata(line);
+                if (fileName.contains("~")) {
+                    getFullFilePath(fileName); // Throws FileNotFoundException if path doesn't exist
+                }
+
+                addMetadata(line);
+            }
+        } else {
+            throw new FileNotFoundException(LOGGER.getMessage(MessageCodes.MG_107)); // No media files found
         }
 
         return line;
     }
 
     /**
+     * Tests whether a file is expected.
+     *
+     * @param aRow A CSV row
+     * @return True if a file is expected for this supplied row
+     */
+    private boolean fileExpected(final String[] aRow) {
+        return !aRow[myCsvHeaders.getObjectTypeIndex()].equals("Collection");
+    }
+
+    /**
      * Method to extract metadata from media file and add to output row.
      *
      * @param aRow The row from the output file.
+     * @throws FileNotFoundException If a media file could be found
      */
-    private static void addMetadata(final String... aRow) {
-        final FFprobe ffprobe;
-        final FFmpegProbeResult probeResult;
-        final FFmpegFormat format;
-
+    private void addMetadata(final String... aRow) throws FileNotFoundException, IOException {
         try {
-            ffprobe = new FFprobe(FFMPEG_PATH);
-            probeResult = ffprobe.probe(MEDIA_PATH.concat(aRow[myCsvHeaders.getFileNameIndex()]));
-            format = probeResult.getFormat();
+            final FFprobe ffprobe = new FFprobe(myFfmpegPath);
+            final String filePath = aRow[myCsvHeaders.getFileNameIndex()];
+            final FFmpegProbeResult probeResult = ffprobe.probe(getFullFilePath(filePath));
+            final FFmpegFormat format = probeResult.getFormat();
 
             aRow[aRow.length - DURATION_OFFSET] = String.valueOf(format.duration);
             aRow[aRow.length - FORMAT_OFFSET] = format.format_name;
 
             if (probeResult.getStreams() != null) {
-                for (final FFmpegStream element : probeResult.getStreams()) {
-                    final FFmpegStream stream;
-                    stream = element;
+                for (final FFmpegStream stream : probeResult.getStreams()) {
                     if (stream.width != 0) {
                         aRow[aRow.length - WIDTH_OFFSET] = String.valueOf(stream.width);
                     }
@@ -301,8 +333,28 @@ public final class MetadataSetter implements Callable<Integer> {
                 }
             }
         } catch (final IOException details) {
-            System.err.println("Problem reading media file: " + details.getMessage());
+            System.err.println(LOGGER.getMessage(MessageCodes.MG_106, details.getMessage()));
+            throw details;
         }
+    }
+
+    /**
+     * Gets the full path from the supplied partial path.
+     *
+     * @param aPartialPath A latter part of a file path
+     * @return The full path to a file
+     * @throws FileNotFoundException If the file could not be found at any of the possible paths
+     */
+    private String getFullFilePath(final String aPartialPath) throws FileNotFoundException {
+        for (final String mediaPath : myMediaPath) {
+            final Path path = Path.of(mediaPath, aPartialPath);
+
+            if (Files.exists(path)) {
+                return path.toString();
+            }
+        }
+
+        throw new FileNotFoundException(LOGGER.getMessage(MessageCodes.MG_105, StringUtils.toString(',', myMediaPath)));
     }
 
     /**
@@ -311,7 +363,7 @@ public final class MetadataSetter implements Callable<Integer> {
      * @param aHeaderRow A CSV header row
      * @return True if all required metadata fields are present; else, false
      */
-    private static boolean allMetaFieldsPresent(final String... aHeaderRow) {
+    private boolean allMetaFieldsPresent(final String... aHeaderRow) {
         return Arrays.stream(aHeaderRow).anyMatch(HEADER_WIDTH::equals) &&
                 Arrays.stream(aHeaderRow).anyMatch(HEADER_HEIGHT::equals) &&
                 Arrays.stream(aHeaderRow).anyMatch(HEADER_DURATION::equals) &&

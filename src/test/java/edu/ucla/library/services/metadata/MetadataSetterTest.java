@@ -14,15 +14,22 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
+
 /**
  * Unit tests for MetadataSetter.java
  */
 public class MetadataSetterTest {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MetadataSetterTest.class, MessageCodes.BUNDLE);
+
+    private static final String TEST_FIXTURES_DIR = "src/test/resources/";
+
     /**
      * Path to CSV file to be updated.
      */
-    private static final String CSV_PATH = "src/test/resources/";
+    private static final String CSV_PATH = TEST_FIXTURES_DIR + "good_csvs/";
 
     /**
      * CSV file name.
@@ -32,7 +39,13 @@ public class MetadataSetterTest {
     /**
      * Path to media files to be read.
      */
-    private static final String MEDIA_PATH = "src/test/resources/media/";
+    private static final String MEDIA_PATH = TEST_FIXTURES_DIR + "media/";
+
+    /**
+     * A program argument that includes two media mounts (or directories) separated by a comma. If the program is
+     * operating as it should, both paths will be checked for the media file from the CSV's 'File Name' column.
+     */
+    private static final String COMBINED_MEDIA_PATHS = TEST_FIXTURES_DIR + "media2/," + MEDIA_PATH;
 
     /**
      * Path to ffmpeg probe utility.
@@ -50,21 +63,6 @@ public class MetadataSetterTest {
     private static final String FAKE_PATH = "/not/there/";
 
     /**
-     * Return code for app success.
-     */
-    private static final int SUCCESS = 0;
-
-    /**
-     * Return code for non-existent file/directory.
-     */
-    private static final int NO_FILE = 101;
-
-    /**
-     * Return code for nonexistent ffprope.
-     */
-    private static final int NO_PROBE = 102;
-
-    /**
      * Rule that allows catching System.err output in tests.
      */
     @Rule
@@ -77,20 +75,54 @@ public class MetadataSetterTest {
      */
     @After
     public void tearDown() throws IOException, SecurityException {
-        // delete the output file if left over from test run
         Files.deleteIfExists(FileSystems.getDefault().getPath(OUTPUT_PATH + CSV_NAME));
     }
 
     /**
-     * Tests happy path for app execution.
+     * Tests happy path with a directory with CSV files supplied.
      */
     @Test
-    public void testGetMeta() throws Exception {
+    public void testGetMetaWithDir() throws Exception {
         final int statusCode = catchSystemExit(() -> {
-            final String[] args = { CSV_PATH, MEDIA_PATH, FFMPEG_PATH, OUTPUT_PATH };
-            MetadataSetter.main(args);
+            MetadataSetter.main(new String[] { CSV_PATH, MEDIA_PATH, FFMPEG_PATH, OUTPUT_PATH });
         });
-        assertEquals(SUCCESS, statusCode);
+        assertEquals(ExitCodes.SUCCESS, statusCode);
+        assertTrue(Files.exists(FileSystems.getDefault().getPath(OUTPUT_PATH + CSV_NAME)));
+    }
+
+    /**
+     * Tests happy path with a CSV file supplied.
+     */
+    @Test
+    public void testGetMetaWithFile() throws Exception {
+        final int statusCode = catchSystemExit(() -> {
+            MetadataSetter.main(new String[] { CSV_PATH + CSV_NAME, MEDIA_PATH, FFMPEG_PATH, OUTPUT_PATH });
+        });
+        assertEquals(ExitCodes.SUCCESS, statusCode);
+        assertTrue(Files.exists(FileSystems.getDefault().getPath(OUTPUT_PATH + CSV_NAME)));
+    }
+
+    /**
+     * Tests happy path with a CSV file supplied and multiple media mounts.
+     */
+    @Test
+    public void testGetMetaWithFileMultipleMediaPaths() throws Exception {
+        final int statusCode = catchSystemExit(() -> {
+            MetadataSetter.main(new String[] { CSV_PATH + CSV_NAME, COMBINED_MEDIA_PATHS, FFMPEG_PATH, OUTPUT_PATH });
+        });
+        assertEquals(ExitCodes.SUCCESS, statusCode);
+        assertTrue(Files.exists(FileSystems.getDefault().getPath(OUTPUT_PATH + CSV_NAME)));
+    }
+
+    /**
+     * Tests happy path with a directory with CSV files supplied and multiple media mounts.
+     */
+    @Test
+    public void testGetMetaWithDirWithMultipleMediaPaths() throws Exception {
+        final int statusCode = catchSystemExit(() -> {
+            MetadataSetter.main(new String[] { CSV_PATH, COMBINED_MEDIA_PATHS, FFMPEG_PATH, OUTPUT_PATH });
+        });
+        assertEquals(ExitCodes.SUCCESS, statusCode);
         assertTrue(Files.exists(FileSystems.getDefault().getPath(OUTPUT_PATH + CSV_NAME)));
     }
 
@@ -100,11 +132,10 @@ public class MetadataSetterTest {
     @Test
     public void testMissingDir() throws Exception {
         final int statusCode = catchSystemExit(() -> {
-            final String[] args = { FAKE_PATH, MEDIA_PATH, FFMPEG_PATH, OUTPUT_PATH };
-            MetadataSetter.main(args);
+            MetadataSetter.main(new String[] { FAKE_PATH, MEDIA_PATH, FFMPEG_PATH, OUTPUT_PATH });
         });
-        assertEquals(NO_FILE, statusCode);
-        assertTrue(mySystemErrRule.getLog().contains("file must exist"));
+        assertEquals(ExitCodes.FILE_DOESNT_EXIST, statusCode);
+        assertTrue(mySystemErrRule.getLog().trim().equals(LOGGER.getMessage(MessageCodes.MG_100, FAKE_PATH)));
     }
 
     /**
@@ -113,10 +144,9 @@ public class MetadataSetterTest {
     @Test
     public void testMissingProbe() throws Exception {
         final int statusCode = catchSystemExit(() -> {
-            final String[] args = { CSV_PATH, MEDIA_PATH, FAKE_PATH, OUTPUT_PATH };
-            MetadataSetter.main(args);
+            MetadataSetter.main(new String[] { CSV_PATH, MEDIA_PATH, FAKE_PATH, OUTPUT_PATH });
         });
-        assertEquals(NO_PROBE, statusCode);
-        assertTrue(mySystemErrRule.getLog().contains("is not valid path to ffprobe"));
+        assertEquals(ExitCodes.PROBE_DOESNT_EXIST, statusCode);
+        assertTrue(mySystemErrRule.getLog().trim().equals(LOGGER.getMessage(MessageCodes.MG_102, FAKE_PATH)));
     }
 }
