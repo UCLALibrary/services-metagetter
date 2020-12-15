@@ -37,6 +37,11 @@ public class MetadataSetterTest {
     private static final String CSV_NAME = "sales.csv";
 
     /**
+     * A CSV file that references a bad media file.
+     */
+    private static final String CSV_WITH_BAD_MEDIA = TEST_FIXTURES_DIR + "bad_csvs/bad-media-file.csv";
+
+    /**
      * Path to media files to be read.
      */
     private static final String MEDIA_PATH = TEST_FIXTURES_DIR + "media/";
@@ -100,6 +105,22 @@ public class MetadataSetterTest {
         });
         assertEquals(ExitCodes.SUCCESS, statusCode);
         assertTrue(Files.exists(FileSystems.getDefault().getPath(OUTPUT_PATH + CSV_NAME)));
+    }
+
+    /**
+     * Tests what happens when ffprobe throws an exception message.
+     */
+    @Test
+    public void testGetMetaFromBadFileMultipleMediaPaths() throws Exception {
+        final String ffprobeMessage = "/usr/bin/ffprobe returned non-zero exit status." + System.lineSeparator();
+        final int statusCode = catchSystemExit(() -> {
+            MetadataSetter.main(new String[] { CSV_WITH_BAD_MEDIA, COMBINED_MEDIA_PATHS, FFMPEG_PATH, OUTPUT_PATH });
+        });
+        assertEquals(ExitCodes.READ_WRITE_ERROR, statusCode);
+        assertEquals(
+                LOGGER.getMessage(MessageCodes.MG_106, "bad-mp3-file.mp3",
+                        ffprobeMessage + LOGGER.getMessage(MessageCodes.MG_109)),
+                mySystemErrRule.getLog().trim().replaceAll(System.getProperty("line.separator"), " "));
     }
 
     /**

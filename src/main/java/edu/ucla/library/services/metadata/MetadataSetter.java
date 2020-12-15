@@ -213,6 +213,7 @@ public final class MetadataSetter implements Callable<Integer> {
      * Method to process CSV file(s) to add columns for media metadata.
      *
      * @param aPath Path to file to be read and copied/updated
+     * @throws I18nRuntimeException A wrapped exception thrown while adding A/V metadata
      */
     private void addMetaToCsv(final Path aPath) throws I18nRuntimeException {
         final File outputFile = Paths.get(myOutputPath, aPath.toFile().getName()).toFile();
@@ -223,6 +224,7 @@ public final class MetadataSetter implements Callable<Integer> {
             final List<String[]> output = new ArrayList<>(input.size());
             final boolean hasAllMetas = allMetaFieldsPresent(input.get(0));
 
+            // Informational message that lets the user know which CSV file is being processed
             System.out.println(LOGGER.getMessage(MessageCodes.MG_103, aPath));
 
             myCsvHeaders = new CsvHeaders(input.get(0));
@@ -240,6 +242,8 @@ public final class MetadataSetter implements Callable<Integer> {
             for (final String[] row : output) {
                 writer.writeNext(row);
             }
+        } catch (final FfProbeException details) {
+            throw new I18nRuntimeException(details, MessageCodes.BUNDLE, MessageCodes.MG_000, details.getMessage());
         } catch (final IOException details) { // Catches FileNotFoundException(s) and other IOException(s), too
             throw new I18nRuntimeException(details, MessageCodes.BUNDLE, MessageCodes.MG_104, details.getMessage());
         } catch (final FileFormatException details) {
@@ -270,9 +274,11 @@ public final class MetadataSetter implements Callable<Integer> {
      * @param aSource The original row from the source file
      * @return The modified CSV row
      * @throws FileNotFoundException If a media file could not be found
+     * @throws FfProbeException If FFProbe encounters an error while reading the media file
+     * @throws FileFormatException If the media file doesn't have a file extension
      */
     private String[] buildARow(final boolean aHasColumns, final String... aSource)
-            throws FileNotFoundException, IOException, FileFormatException {
+            throws FileNotFoundException, FfProbeException, FileFormatException {
         final int fileColumnIndex = myCsvHeaders.getFileNameIndex();
         final String[] line = Arrays.copyOf(aSource, aHasColumns ? aSource.length : aSource.length + 4);
         final String fileName = line[fileColumnIndex];
@@ -311,11 +317,13 @@ public final class MetadataSetter implements Callable<Integer> {
      *
      * @param aRow The row from the output file.
      * @throws FileNotFoundException If a media file could be found
+     * @throws FfProbeException If FFProbe encounters an error while reading the media file
      */
-    private void addMetadata(final String... aRow) throws FileNotFoundException, IOException {
+    private void addMetadata(final String... aRow) throws FileNotFoundException, FfProbeException {
+        final String filePath = aRow[myCsvHeaders.getFileNameIndex()];
+
         try {
             final FFprobe ffprobe = new FFprobe(myFfmpegPath);
-            final String filePath = aRow[myCsvHeaders.getFileNameIndex()];
             final FFmpegProbeResult probeResult = ffprobe.probe(getFullFilePath(filePath));
             final FFmpegFormat format = probeResult.getFormat();
 
@@ -333,8 +341,8 @@ public final class MetadataSetter implements Callable<Integer> {
                 }
             }
         } catch (final IOException details) {
-            System.err.println(LOGGER.getMessage(MessageCodes.MG_106, details.getMessage()));
-            throw details;
+            // We want to distinguish between this IOException and one that comes from reading/writing the CSV file
+            throw new FfProbeException(details, filePath);
         }
     }
 
