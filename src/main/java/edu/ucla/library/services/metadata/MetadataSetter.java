@@ -213,6 +213,7 @@ public final class MetadataSetter implements Callable<Integer> {
      * Method to process CSV file(s) to add columns for media metadata.
      *
      * @param aPath Path to file to be read and copied/updated
+     * @throws I18nRuntimeException A wrapped exception thrown while adding A/V metadata
      */
     private void addMetaToCsv(final Path aPath) throws I18nRuntimeException {
         final File outputFile = Paths.get(myOutputPath, aPath.toFile().getName()).toFile();
@@ -273,6 +274,8 @@ public final class MetadataSetter implements Callable<Integer> {
      * @param aSource The original row from the source file
      * @return The modified CSV row
      * @throws FileNotFoundException If a media file could not be found
+     * @throws FfProbeException If FFProbe encounters an error while reading the media file
+     * @throws FileFormatException If the media file doesn't have a file extension
      */
     private String[] buildARow(final boolean aHasColumns, final String... aSource)
             throws FileNotFoundException, FfProbeException, FileFormatException {
@@ -314,6 +317,7 @@ public final class MetadataSetter implements Callable<Integer> {
      *
      * @param aRow The row from the output file.
      * @throws FileNotFoundException If a media file could be found
+     * @throws FfProbeException If FFProbe encounters an error while reading the media file
      */
     private void addMetadata(final String... aRow) throws FileNotFoundException, FfProbeException {
         final String filePath = aRow[myCsvHeaders.getFileNameIndex()];
