@@ -5,9 +5,13 @@ import static com.github.stefanbirkner.systemlambda.SystemLambda.catchSystemExit
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import com.opencsv.CSVReader;
+
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Rule;
@@ -105,6 +109,25 @@ public class MetadataSetterTest {
         });
         assertEquals(ExitCodes.SUCCESS, statusCode);
         assertTrue(Files.exists(FileSystems.getDefault().getPath(OUTPUT_PATH + CSV_NAME)));
+    }
+
+    /**
+     * Tests populating Format.extent.
+     */
+    @Test
+    public void testPopulateFormatExtentField() throws Exception {
+        final int statusCode = catchSystemExit(() -> {
+            MetadataSetter.main(new String[] { CSV_PATH + CSV_NAME, MEDIA_PATH, FFMPEG_PATH, OUTPUT_PATH });
+        });
+
+        final String formattedDuration = "12m 37s";
+        final CSVReader reader = new CSVReader(new FileReader(
+                                 FileSystems.getDefault().getPath(OUTPUT_PATH + CSV_NAME).toFile()));
+        final List<String[]> rows = reader.readAll();
+        final CsvHeaders headers = new CsvHeaders(rows.get(0));
+
+        reader.close();
+        assertEquals(rows.get(2)[headers.getFormatExtentIndex()], formattedDuration);
     }
 
     /**
