@@ -343,8 +343,9 @@ public final class MetadataSetter implements Callable<Integer> {
                 final int hours = (int) rawDuration / ONE_HOUR;
                 final int minutes = (int) (rawDuration % ONE_HOUR) / ONE_MINUTE;
                 final int seconds = (int) rawDuration % ONE_MINUTE;
-                final StringBuffer formattedDuration =
-                    new StringBuffer( hours > 0 ? String.format("%02dh", hours) : "" );
+                final String formattedHours = hours > 0 ? String.format("%02dh", hours) : "";
+                final StringBuffer formattedDuration = new StringBuffer();
+                formattedDuration.append(formattedHours);
                 formattedDuration.append(String.format(" %02dm %02ds", minutes, seconds));
                 aRow[myCsvHeaders.getFormatExtentIndex()] = formattedDuration.toString().trim();
             }
