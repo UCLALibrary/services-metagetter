@@ -73,6 +73,16 @@ public final class MetadataSetter implements Callable<Integer> {
     private static final int DURATION_OFFSET = 2;
 
     /**
+     * Constant for one hour in seconds, used for formatting Format.extent content.
+     */
+    private static final int ONE_HOUR = 3600;
+
+    /**
+     * Constant for one minute in seconds, used for formatting Format.extent content.
+     */
+    private static final int ONE_MINUTE = 60;
+
+    /**
      * Constant for column position of media.format.
      */
     private static final int FORMAT_OFFSET = 1;
@@ -328,6 +338,17 @@ public final class MetadataSetter implements Callable<Integer> {
             final FFmpegFormat format = probeResult.getFormat();
 
             aRow[aRow.length - DURATION_OFFSET] = String.valueOf(format.duration);
+            if (myCsvHeaders.hasFormatExtentIndex() && aRow[myCsvHeaders.getFormatExtentIndex()].trim().equals("")) {
+                final double rawDuration = format.duration;
+                final int hours = (int) rawDuration / ONE_HOUR;
+                final int minutes = (int) (rawDuration % ONE_HOUR) / ONE_MINUTE;
+                final int seconds = (int) rawDuration % ONE_MINUTE;
+                final String formattedHours = hours > 0 ? String.format("%02dh", hours) : "";
+                final StringBuffer formattedDuration = new StringBuffer();
+                formattedDuration.append(formattedHours);
+                formattedDuration.append(String.format(" %02dm %02ds", minutes, seconds));
+                aRow[myCsvHeaders.getFormatExtentIndex()] = formattedDuration.toString().trim();
+            }
             aRow[aRow.length - FORMAT_OFFSET] = format.format_name;
 
             if (probeResult.getStreams() != null) {

@@ -17,6 +17,11 @@ public class CsvHeaders {
     private int myObjectTypeIndex = -1;
 
     /**
+     * The index position of the 'Format.extent' column.
+     */
+    private int myFormatExtentIndex = -1;
+
+    /**
      * Creates a new CSV headers object.
      *
      * @param aCsvHeaderRow The header row from the CSV file
@@ -29,6 +34,9 @@ public class CsvHeaders {
                     break;
                 case "Object Type":
                     myObjectTypeIndex = index;
+                    break;
+                case "Format.extent":
+                    myFormatExtentIndex = index;
                     break;
                 // Other cases for the A/V fields we add (when we work that ticket)
                 default:
@@ -71,5 +79,23 @@ public class CsvHeaders {
      */
     public boolean hasObjectTypeIndex() {
         return myObjectTypeIndex != -1;
+    }
+
+    /**
+     * Gets the index position of the 'Format.extent' column from the CSV's header row.
+     *
+     * @return The index position of the 'Format.extent' column
+     */
+    public int getFormatExtentIndex() {
+        return myFormatExtentIndex;
+    }
+
+    /**
+     * Whether the CSV metadata has a 'Format.extent' column.
+     *
+     * @return True if a 'Format.extent' column was found; else, false
+     */
+    public boolean hasFormatExtentIndex() {
+        return myFormatExtentIndex != -1;
     }
 }
