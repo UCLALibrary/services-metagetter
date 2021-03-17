@@ -22,6 +22,11 @@ public class CsvHeaders {
     private int myFormatExtentIndex = -1;
 
     /**
+     * The index position of the 'media.format' column.
+     */
+    private int myMediaFormatIndex = -1;
+
+    /**
      * Creates a new CSV headers object.
      *
      * @param aCsvHeaderRow The header row from the CSV file
@@ -37,6 +42,9 @@ public class CsvHeaders {
                     break;
                 case "Format.extent":
                     myFormatExtentIndex = index;
+                    break;
+                case "media.format":
+                    myMediaFormatIndex = index;
                     break;
                 // Other cases for the A/V fields we add (when we work that ticket)
                 default:
@@ -82,6 +90,15 @@ public class CsvHeaders {
     }
 
     /**
+     * Whether the CSV metadata has a 'Format.extent' column.
+     *
+     * @return True if a 'Format.extent' column was found; else, false
+     */
+    public boolean hasFormatExtentIndex() {
+        return myFormatExtentIndex != -1;
+    }
+
+    /**
      * Gets the index position of the 'Format.extent' column from the CSV's header row.
      *
      * @return The index position of the 'Format.extent' column
@@ -91,11 +108,20 @@ public class CsvHeaders {
     }
 
     /**
-     * Whether the CSV metadata has a 'Format.extent' column.
+     * Whether the CSV metadata has a 'media.format' column.
      *
-     * @return True if a 'Format.extent' column was found; else, false
+     * @return True if a 'media.format' column was found; else, false
      */
-    public boolean hasFormatExtentIndex() {
-        return myFormatExtentIndex != -1;
+    public boolean hasMediaFormatIndex() {
+        return myMediaFormatIndex != -1;
+    }
+
+    /**
+     * Gets the index position of the 'media.format' column from the CSV's header row.
+     *
+     * @return The index position of the 'media.format' column
+     */
+    public int getMediaFormatIndex() {
+        return myMediaFormatIndex;
     }
 }

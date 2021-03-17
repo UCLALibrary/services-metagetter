@@ -135,6 +135,30 @@ public class MetadataSetterTest {
     }
 
     /**
+     * Tests populating media.format.
+     */
+    @Test
+    public void testPopulateMediaFormat() throws Exception {
+        final int statusCode = catchSystemExit(() -> {
+            MetadataSetter.main(new String[] { CSV_PATH + CSV_NAME, MEDIA_PATH, FFMPEG_PATH, OUTPUT_PATH });
+        });
+
+        // Nb: value comes from src/test/resources/media/ephraim/audio/21198-zz000954s4-2-submaster.mp3
+        final String audioFormat = "audio/mpeg";
+        // Nb: value comes from src/test/resources/media/ephraim/video/crowd.mpg
+        final String videoFormat = "video/mpeg";
+        final Path updatedCsv = FileSystems.getDefault().getPath(OUTPUT_PATH + CSV_NAME);
+        try (CSVReader reader = new CSVReader(new FileReader(updatedCsv.toFile()))) {
+            final List<String[]> rows = reader.readAll();
+            final CsvHeaders headers = new CsvHeaders(rows.get(0));
+            assertEquals(rows.get(2)[headers.getMediaFormatIndex()], audioFormat);
+            assertEquals(rows.get(4)[headers.getMediaFormatIndex()], videoFormat);
+        } catch (IOException details) {
+            fail(details.getMessage());
+        }
+    }
+
+    /**
      * Tests what happens when ffprobe throws an exception message.
      */
     @Test
