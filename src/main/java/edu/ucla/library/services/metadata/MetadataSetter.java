@@ -338,6 +338,7 @@ public final class MetadataSetter implements Callable<Integer> {
             final FFmpegFormat format = probeResult.getFormat();
 
             aRow[aRow.length - DURATION_OFFSET] = String.valueOf(format.duration);
+
             if (myCsvHeaders.hasFormatExtentIndex() && aRow[myCsvHeaders.getFormatExtentIndex()].trim().equals("")) {
                 final double rawDuration = format.duration;
                 final int hours = (int) rawDuration / ONE_HOUR;
@@ -349,7 +350,10 @@ public final class MetadataSetter implements Callable<Integer> {
                 formattedDuration.append(String.format(" %02dm %02ds", minutes, seconds));
                 aRow[myCsvHeaders.getFormatExtentIndex()] = formattedDuration.toString().trim();
             }
-            aRow[aRow.length - FORMAT_OFFSET] = format.format_name;
+
+            final Path path = new File(filePath).toPath();
+            final String mimeType = Files.probeContentType(path);
+            aRow[aRow.length - FORMAT_OFFSET] = mimeType;
 
             if (probeResult.getStreams() != null) {
                 for (final FFmpegStream stream : probeResult.getStreams()) {
