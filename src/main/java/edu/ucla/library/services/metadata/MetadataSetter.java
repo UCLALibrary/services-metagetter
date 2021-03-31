@@ -305,7 +305,7 @@ public final class MetadataSetter implements Callable<Integer> {
 
                 addMetadata(line);
             }
-        } 
+        }
 
         return line;
     }
@@ -385,7 +385,8 @@ public final class MetadataSetter implements Callable<Integer> {
             }
         }
 
-        throw new FileNotFoundException(LOGGER.getMessage(MessageCodes.MG_105, StringUtils.toString(',', myMediaPath)));
+        throw new FileNotFoundException(LOGGER.getMessage(MessageCodes.MG_105,
+            myMediaPath.contains(",") ? StringUtils.toString(',', myMediaPath) : myMediaPath));
     }
 
     /**
