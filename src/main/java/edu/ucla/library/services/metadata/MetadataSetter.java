@@ -294,7 +294,7 @@ public final class MetadataSetter implements Callable<Integer> {
         final String fileName = line[fileColumnIndex];
 
         if (fileColumnIndex != -1) {
-            if (fileExpected(line)) {
+            if (fileExpected(line) && !fileName.trim().equals("")) {
                 if (!fileName.contains(".")) {
                     throw new FileFormatException(line[fileColumnIndex]); // Check that file has an extension
                 }
@@ -305,8 +305,6 @@ public final class MetadataSetter implements Callable<Integer> {
 
                 addMetadata(line);
             }
-        } else {
-            throw new FileNotFoundException(LOGGER.getMessage(MessageCodes.MG_107)); // No media files found
         }
 
         return line;
@@ -387,7 +385,8 @@ public final class MetadataSetter implements Callable<Integer> {
             }
         }
 
-        throw new FileNotFoundException(LOGGER.getMessage(MessageCodes.MG_105, StringUtils.toString(',', myMediaPath)));
+        throw new FileNotFoundException(LOGGER.getMessage(MessageCodes.MG_105, aPartialPath,
+            myMediaPath.contains(",") ? StringUtils.toString(',', myMediaPath) : myMediaPath));
     }
 
     /**
