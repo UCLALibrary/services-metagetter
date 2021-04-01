@@ -385,7 +385,7 @@ public final class MetadataSetter implements Callable<Integer> {
             }
         }
 
-        throw new FileNotFoundException(LOGGER.getMessage(MessageCodes.MG_105,
+        throw new FileNotFoundException(LOGGER.getMessage(MessageCodes.MG_105, aPartialPath,
             myMediaPath.contains(",") ? StringUtils.toString(',', myMediaPath) : myMediaPath));
     }
 
