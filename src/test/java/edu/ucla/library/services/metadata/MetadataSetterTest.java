@@ -168,7 +168,7 @@ public class MetadataSetterTest {
             MetadataSetter.main(new String[] { CSV_WITH_BAD_MEDIA, COMBINED_MEDIA_PATHS, FFMPEG_PATH, OUTPUT_PATH });
         });
         assertEquals(ExitCodes.SUCCESS, statusCode);
-	assertTrue(mySystemErrRule.getLog().trim().contains(errorMessage));
+        assertTrue(mySystemErrRule.getLog().trim().contains(errorMessage));
     }
 
     /**
