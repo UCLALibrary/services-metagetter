@@ -252,8 +252,6 @@ public final class MetadataSetter implements Callable<Integer> {
             for (final String[] row : output) {
                 writer.writeNext(row);
             }
-        } catch (final FfProbeException details) {
-            throw new I18nRuntimeException(details, MessageCodes.BUNDLE, MessageCodes.MG_000, details.getMessage());
         } catch (final IOException details) { // Catches FileNotFoundException(s) and other IOException(s), too
             throw new I18nRuntimeException(details, MessageCodes.BUNDLE, MessageCodes.MG_104, details.getMessage());
         } catch (final FileFormatException details) {
@@ -288,7 +286,7 @@ public final class MetadataSetter implements Callable<Integer> {
      * @throws FileFormatException If the media file doesn't have a file extension
      */
     private String[] buildARow(final boolean aHasColumns, final String... aSource)
-            throws FileNotFoundException, FfProbeException, FileFormatException {
+            throws FileNotFoundException, FileFormatException {
         final int fileColumnIndex = myCsvHeaders.getFileNameIndex();
         final String[] line = Arrays.copyOf(aSource, aHasColumns ? aSource.length : aSource.length + 4);
         final String fileName = line[fileColumnIndex];
@@ -327,7 +325,7 @@ public final class MetadataSetter implements Callable<Integer> {
      * @throws FileNotFoundException If a media file could be found
      * @throws FfProbeException If FFProbe encounters an error while reading the media file
      */
-    private void addMetadata(final String... aRow) throws FileNotFoundException, FfProbeException {
+    private void addMetadata(final String... aRow) {
         final String filePath = aRow[myCsvHeaders.getFileNameIndex()];
 
         try {
@@ -364,7 +362,6 @@ public final class MetadataSetter implements Callable<Integer> {
                 }
             }
         } catch (final IOException details) {
-            // We want to distinguish between this IOException and one that comes from reading/writing the CSV file
             System.err.println(LOGGER.getMessage(MessageCodes.MG_106, filePath, details.getMessage()));
         }
     }
