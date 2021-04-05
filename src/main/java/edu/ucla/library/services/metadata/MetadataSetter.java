@@ -365,7 +365,7 @@ public final class MetadataSetter implements Callable<Integer> {
             }
         } catch (final IOException details) {
             // We want to distinguish between this IOException and one that comes from reading/writing the CSV file
-            throw new FfProbeException(details, filePath);
+            System.err.println(LOGGER.getMessage(MessageCodes.MG_106, filePath, details.getMessage()));
         }
     }
 

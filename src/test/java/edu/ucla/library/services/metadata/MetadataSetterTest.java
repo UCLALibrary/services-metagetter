@@ -163,15 +163,12 @@ public class MetadataSetterTest {
      */
     @Test
     public void testGetMetaFromBadFileMultipleMediaPaths() throws Exception {
-        final String ffprobeMessage = "/usr/bin/ffprobe returned non-zero exit status." + System.lineSeparator();
+        final String errorMessage = "Problem reading media file";
         final int statusCode = catchSystemExit(() -> {
             MetadataSetter.main(new String[] { CSV_WITH_BAD_MEDIA, COMBINED_MEDIA_PATHS, FFMPEG_PATH, OUTPUT_PATH });
         });
-        assertEquals(ExitCodes.READ_WRITE_ERROR, statusCode);
-        assertEquals(
-                LOGGER.getMessage(MessageCodes.MG_106, "bad-mp3-file.mp3",
-                        ffprobeMessage + LOGGER.getMessage(MessageCodes.MG_109)),
-                mySystemErrRule.getLog().trim().replaceAll(System.getProperty("line.separator"), " "));
+        assertEquals(ExitCodes.SUCCESS, statusCode);
+	assertTrue(mySystemErrRule.getLog().trim().contains(errorMessage));
     }
 
     /**
