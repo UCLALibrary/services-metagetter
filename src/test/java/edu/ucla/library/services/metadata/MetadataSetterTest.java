@@ -32,6 +32,8 @@ public class MetadataSetterTest {
 
     private static final String TEST_FIXTURES_DIR = "src/test/resources/";
 
+    private static final String EMPTY = "";
+
     /**
      * Path to CSV file to be updated.
      */
@@ -153,6 +155,30 @@ public class MetadataSetterTest {
             final CsvHeaders headers = new CsvHeaders(rows.get(0));
             assertEquals(rows.get(2)[headers.getMediaFormatIndex()], audioFormat);
             assertEquals(rows.get(4)[headers.getMediaFormatIndex()], videoFormat);
+        } catch (IOException details) {
+            fail(details.getMessage());
+        }
+    }
+
+    /**
+     * Tests not populating media.* fields for non-A/V media
+     */
+    @Test
+    public void testDontPopulateImageMetadata() throws Exception {
+        final int statusCode = catchSystemExit(() -> {
+            MetadataSetter.main(new String[] { CSV_PATH + CSV_NAME, MEDIA_PATH, FFMPEG_PATH, OUTPUT_PATH });
+        });
+
+        final Path updatedCsv = FileSystems.getDefault().getPath(OUTPUT_PATH + CSV_NAME);
+        try (CSVReader reader = new CSVReader(new FileReader(updatedCsv.toFile()))) {
+            final List<String[]> rows = reader.readAll();
+            final CsvHeaders headers = new CsvHeaders(rows.get(0));
+            //row 4 is image
+            final String width = rows.get(3)[headers.getMediaWidthIndex()].trim();
+            final String height = rows.get(3)[headers.getMediaHeightIndex()].trim();
+            final String duration = rows.get(3)[headers.getMediaDurationIndex()].trim();
+            final String format = rows.get(3)[headers.getMediaFormatIndex()].trim();
+            assertTrue(width.equals(EMPTY) && height.equals(EMPTY) && duration.equals(EMPTY) && format.equals(EMPTY));
         } catch (IOException details) {
             fail(details.getMessage());
         }

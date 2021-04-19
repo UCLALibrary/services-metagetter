@@ -332,32 +332,35 @@ public final class MetadataSetter implements Callable<Integer> {
             final FFprobe ffprobe = new FFprobe(myFfmpegPath);
             final FFmpegProbeResult probeResult = ffprobe.probe(getFullFilePath(filePath));
             final FFmpegFormat format = probeResult.getFormat();
-
-            aRow[aRow.length - DURATION_OFFSET] = String.valueOf(format.duration);
-
-            if (myCsvHeaders.hasFormatExtentIndex() && aRow[myCsvHeaders.getFormatExtentIndex()].trim().equals("")) {
-                final double rawDuration = format.duration;
-                final int hours = (int) rawDuration / ONE_HOUR;
-                final int minutes = (int) (rawDuration % ONE_HOUR) / ONE_MINUTE;
-                final int seconds = (int) rawDuration % ONE_MINUTE;
-                final String formattedHours = hours > 0 ? String.format("%02dh", hours) : "";
-                final StringBuffer formattedDuration = new StringBuffer();
-                formattedDuration.append(formattedHours);
-                formattedDuration.append(String.format(" %02dm %02ds", minutes, seconds));
-                aRow[myCsvHeaders.getFormatExtentIndex()] = formattedDuration.toString().trim();
-            }
-
             final Path path = new File(filePath).toPath();
             final String mimeType = Files.probeContentType(path);
-            aRow[aRow.length - FORMAT_OFFSET] = mimeType;
 
-            if (probeResult.getStreams() != null) {
-                for (final FFmpegStream stream : probeResult.getStreams()) {
-                    if (stream.width != 0) {
-                        aRow[aRow.length - WIDTH_OFFSET] = String.valueOf(stream.width);
-                    }
-                    if (stream.height != 0) {
-                        aRow[aRow.length - HEIGHT_OFFSET] = String.valueOf(stream.height);
+            if (mimeType.contains("audio") || mimeType.contains("video")) {
+                aRow[aRow.length - DURATION_OFFSET] = String.valueOf(format.duration);
+
+                if (myCsvHeaders.hasFormatExtentIndex() &&
+                    aRow[myCsvHeaders.getFormatExtentIndex()].trim().equals("")) {
+                    final double rawDuration = format.duration;
+                    final int hours = (int) rawDuration / ONE_HOUR;
+                    final int minutes = (int) (rawDuration % ONE_HOUR) / ONE_MINUTE;
+                    final int seconds = (int) rawDuration % ONE_MINUTE;
+                    final String formattedHours = hours > 0 ? String.format("%02dh", hours) : "";
+                    final StringBuffer formattedDuration = new StringBuffer();
+                    formattedDuration.append(formattedHours);
+                    formattedDuration.append(String.format(" %02dm %02ds", minutes, seconds));
+                    aRow[myCsvHeaders.getFormatExtentIndex()] = formattedDuration.toString().trim();
+                }
+
+                aRow[aRow.length - FORMAT_OFFSET] = mimeType;
+
+                if (probeResult.getStreams() != null) {
+                    for (final FFmpegStream stream : probeResult.getStreams()) {
+                        if (stream.width != 0) {
+                            aRow[aRow.length - WIDTH_OFFSET] = String.valueOf(stream.width);
+                        }
+                        if (stream.height != 0) {
+                            aRow[aRow.length - HEIGHT_OFFSET] = String.valueOf(stream.height);
+                        }
                     }
                 }
             }
