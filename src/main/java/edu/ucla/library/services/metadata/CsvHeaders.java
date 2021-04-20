@@ -27,6 +27,21 @@ public class CsvHeaders {
     private int myMediaFormatIndex = -1;
 
     /**
+     * The index position of the 'media.width' column.
+     */
+    private int myMediaWidthIndex = -1;
+
+    /**
+     * The index position of the 'media.height' column.
+     */
+    private int myMediaHeightIndex = -1;
+
+    /**
+     * The index position of the 'media.duration' column.
+     */
+    private int myMediaDurationIndex = -1;
+
+    /**
      * Creates a new CSV headers object.
      *
      * @param aCsvHeaderRow The header row from the CSV file
@@ -34,16 +49,25 @@ public class CsvHeaders {
     public CsvHeaders(final String... aCsvHeaderRow) {
         for (int index = 0; index < aCsvHeaderRow.length; index++) {
             switch (aCsvHeaderRow[index]) {
-                case "File Name":
+                case Constants.HEADER_NAME:
                     myFileNameIndex = index;
                     break;
-                case "Object Type":
+                case Constants.HEADER_TYPE:
                     myObjectTypeIndex = index;
                     break;
-                case "Format.extent":
+                case Constants.HEADER_EXTENT:
                     myFormatExtentIndex = index;
                     break;
-                case "media.format":
+                case Constants.HEADER_WIDTH:
+                    myMediaWidthIndex = index;
+                    break;
+                case Constants.HEADER_HEIGHT:
+                    myMediaHeightIndex = index;
+                    break;
+                case Constants.HEADER_DURATION:
+                    myMediaDurationIndex = index;
+                    break;
+                case Constants.HEADER_FORMAT:
                     myMediaFormatIndex = index;
                     break;
                 // Other cases for the A/V fields we add (when we work that ticket)
@@ -123,5 +147,59 @@ public class CsvHeaders {
      */
     public int getMediaFormatIndex() {
         return myMediaFormatIndex;
+    }
+
+    /**
+     * Whether the CSV metadata has a 'media.width' column.
+     *
+     * @return True if a 'media.width' column was found; else, false
+     */
+    public boolean hasMediaWidthIndex() {
+        return myMediaWidthIndex != -1;
+    }
+
+    /**
+     * Gets the index position of the 'media.width' column from the CSV's header row.
+     *
+     * @return The index position of the 'media.width' column
+     */
+    public int getMediaWidthIndex() {
+        return myMediaWidthIndex;
+    }
+
+    /**
+     * Whether the CSV metadata has a 'media.height' column.
+     *
+     * @return True if a 'media.height' column was found; else, false
+     */
+    public boolean hasMediaHeightIndex() {
+        return myMediaHeightIndex != -1;
+    }
+
+    /**
+     * Gets the index position of the 'media.height' column from the CSV's header row.
+     *
+     * @return The index position of the 'media.height' column
+     */
+    public int getMediaHeightIndex() {
+        return myMediaHeightIndex;
+    }
+
+    /**
+     * Whether the CSV metadata has a 'media.duration' column.
+     *
+     * @return True if a 'media.duration' column was found; else, false
+     */
+    public boolean hasMediaDurationIndex() {
+        return myMediaDurationIndex != -1;
+    }
+
+    /**
+     * Gets the index position of the 'media.duration' column from the CSV's header row.
+     *
+     * @return The index position of the 'media.duration' column
+     */
+    public int getMediaDurationIndex() {
+        return myMediaDurationIndex;
     }
 }
