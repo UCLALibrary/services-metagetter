@@ -38,56 +38,6 @@ public final class MetadataSetter implements Callable<Integer> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MetadataSetter.class, MessageCodes.BUNDLE);
 
     /**
-     * Constant for width column name.
-     */
-    private static final String HEADER_WIDTH = "media.width";
-
-    /**
-     * Constant for height column name.
-     */
-    private static final String HEADER_HEIGHT = "media.height";
-
-    /**
-     * Constant for duration column name.
-     */
-    private static final String HEADER_DURATION = "media.duration";
-
-    /**
-     * Constant for format column name.
-     */
-    private static final String HEADER_FORMAT = "media.format";
-
-    /**
-     * Constant for column position of media.width.
-     */
-    private static final int WIDTH_OFFSET = 4;
-
-    /**
-     * Constant for column position of media.height.
-     */
-    private static final int HEIGHT_OFFSET = 3;
-
-    /**
-     * PConstant for column position of media.duration.
-     */
-    private static final int DURATION_OFFSET = 2;
-
-    /**
-     * Constant for one hour in seconds, used for formatting Format.extent content.
-     */
-    private static final int ONE_HOUR = 3600;
-
-    /**
-     * Constant for one minute in seconds, used for formatting Format.extent content.
-     */
-    private static final int ONE_MINUTE = 60;
-
-    /**
-     * Constant for column position of media.format.
-     */
-    private static final int FORMAT_OFFSET = 1;
-
-    /**
      * Path to CSV file (or directory of CSV files) to be updated.
      */
     @Parameters(index = "0", description = "The CSV file/directory to process.")
@@ -268,10 +218,10 @@ public final class MetadataSetter implements Callable<Integer> {
     private String[] buildHeaderRow(final String... aSource) {
         final String[] headers = Arrays.copyOf(aSource, aSource.length + 4);
 
-        headers[headers.length - WIDTH_OFFSET] = HEADER_WIDTH;
-        headers[headers.length - HEIGHT_OFFSET] = HEADER_HEIGHT;
-        headers[headers.length - DURATION_OFFSET] = HEADER_DURATION;
-        headers[headers.length - FORMAT_OFFSET] = HEADER_FORMAT;
+        headers[headers.length - Constants.WIDTH_OFFSET] = Constants.HEADER_WIDTH;
+        headers[headers.length - Constants.HEIGHT_OFFSET] = Constants.HEADER_HEIGHT;
+        headers[headers.length - Constants.DURATION_OFFSET] = Constants.HEADER_DURATION;
+        headers[headers.length - Constants.FORMAT_OFFSET] = Constants.HEADER_FORMAT;
 
         return headers;
     }
@@ -336,14 +286,14 @@ public final class MetadataSetter implements Callable<Integer> {
             final String mimeType = Files.probeContentType(path);
 
             if (mimeType.contains("audio") || mimeType.contains("video")) {
-                aRow[aRow.length - DURATION_OFFSET] = String.valueOf(format.duration);
+                aRow[aRow.length - Constants.DURATION_OFFSET] = String.valueOf(format.duration);
 
                 if (myCsvHeaders.hasFormatExtentIndex() &&
                     aRow[myCsvHeaders.getFormatExtentIndex()].trim().equals("")) {
                     final double rawDuration = format.duration;
-                    final int hours = (int) rawDuration / ONE_HOUR;
-                    final int minutes = (int) (rawDuration % ONE_HOUR) / ONE_MINUTE;
-                    final int seconds = (int) rawDuration % ONE_MINUTE;
+                    final int hours = (int) rawDuration / Constants.ONE_HOUR;
+                    final int minutes = (int) (rawDuration % Constants.ONE_HOUR) / Constants.ONE_MINUTE;
+                    final int seconds = (int) rawDuration % Constants.ONE_MINUTE;
                     final String formattedHours = hours > 0 ? String.format("%02dh", hours) : "";
                     final StringBuffer formattedDuration = new StringBuffer();
                     formattedDuration.append(formattedHours);
@@ -351,15 +301,15 @@ public final class MetadataSetter implements Callable<Integer> {
                     aRow[myCsvHeaders.getFormatExtentIndex()] = formattedDuration.toString().trim();
                 }
 
-                aRow[aRow.length - FORMAT_OFFSET] = mimeType;
+                aRow[aRow.length - Constants.FORMAT_OFFSET] = mimeType;
 
                 if (probeResult.getStreams() != null) {
                     for (final FFmpegStream stream : probeResult.getStreams()) {
                         if (stream.width != 0) {
-                            aRow[aRow.length - WIDTH_OFFSET] = String.valueOf(stream.width);
+                            aRow[aRow.length - Constants.WIDTH_OFFSET] = String.valueOf(stream.width);
                         }
                         if (stream.height != 0) {
-                            aRow[aRow.length - HEIGHT_OFFSET] = String.valueOf(stream.height);
+                            aRow[aRow.length - Constants.HEIGHT_OFFSET] = String.valueOf(stream.height);
                         }
                     }
                 }
@@ -396,9 +346,9 @@ public final class MetadataSetter implements Callable<Integer> {
      * @return True if all required metadata fields are present; else, false
      */
     private boolean allMetaFieldsPresent(final String... aHeaderRow) {
-        return Arrays.stream(aHeaderRow).anyMatch(HEADER_WIDTH::equals) &&
-                Arrays.stream(aHeaderRow).anyMatch(HEADER_HEIGHT::equals) &&
-                Arrays.stream(aHeaderRow).anyMatch(HEADER_DURATION::equals) &&
-                Arrays.stream(aHeaderRow).anyMatch(HEADER_FORMAT::equals);
+        return Arrays.stream(aHeaderRow).anyMatch(Constants.HEADER_WIDTH::equals) &&
+                Arrays.stream(aHeaderRow).anyMatch(Constants.HEADER_HEIGHT::equals) &&
+                Arrays.stream(aHeaderRow).anyMatch(Constants.HEADER_DURATION::equals) &&
+                Arrays.stream(aHeaderRow).anyMatch(Constants.HEADER_FORMAT::equals);
     }
 }

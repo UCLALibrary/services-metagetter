@@ -49,25 +49,25 @@ public class CsvHeaders {
     public CsvHeaders(final String... aCsvHeaderRow) {
         for (int index = 0; index < aCsvHeaderRow.length; index++) {
             switch (aCsvHeaderRow[index]) {
-                case "File Name":
+                case Constants.HEADER_NAME:
                     myFileNameIndex = index;
                     break;
-                case "Object Type":
+                case Constants.HEADER_TYPE:
                     myObjectTypeIndex = index;
                     break;
-                case "Format.extent":
+                case Constants.HEADER_EXTENT:
                     myFormatExtentIndex = index;
                     break;
-                case "media.width":
+                case Constants.HEADER_WIDTH:
                     myMediaWidthIndex = index;
                     break;
-                case "media.height":
+                case Constants.HEADER_HEIGHT:
                     myMediaHeightIndex = index;
                     break;
-                case "media.duration":
+                case Constants.HEADER_DURATION:
                     myMediaDurationIndex = index;
                     break;
-                case "media.format":
+                case Constants.HEADER_FORMAT:
                     myMediaFormatIndex = index;
                     break;
                 // Other cases for the A/V fields we add (when we work that ticket)
