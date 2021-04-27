@@ -1,7 +1,7 @@
 # services-metagetter
 Quick app to add media metadata to DLCS CSV files
 
-Java app that parses DLCS CSV files, extracts paths for A/V media files, uses ffmpeg to extract metadat (height/width, duration, and MIME type), and adds the metadata to the CSV.
+Java app that parses DLCS CSV files, extracts paths for A/V media files, uses ffmpeg to extract metadata (height/width, duration, and MIME type), and adds the metadata to the CSV.
 
 Maven 3.x or later is required to build the project (`mvn clean package` to build, executable JAR wull be created in target/build-artifact/).
 
