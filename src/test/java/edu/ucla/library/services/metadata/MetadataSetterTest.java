@@ -127,6 +127,9 @@ public class MetadataSetterTest {
         // Nb: value comes from src/test/resources/media/ephraim/audio/21198-zz000954s4-2-submaster.mp3
         final String formattedDuration = "12m 37s";
         final Path updatedCsv = FileSystems.getDefault().getPath(OUTPUT_PATH + CSV_NAME);
+
+        assertEquals(ExitCodes.SUCCESS, statusCode);
+
         try (CSVReader reader = new CSVReader(new FileReader(updatedCsv.toFile()))) {
             final List<String[]> rows = reader.readAll();
             final CsvHeaders headers = new CsvHeaders(rows.get(0));
@@ -150,6 +153,9 @@ public class MetadataSetterTest {
         // Nb: value comes from src/test/resources/media/ephraim/video/crowd.mpg
         final String videoFormat = "video/mpeg";
         final Path updatedCsv = FileSystems.getDefault().getPath(OUTPUT_PATH + CSV_NAME);
+
+        assertEquals(ExitCodes.SUCCESS, statusCode);
+
         try (CSVReader reader = new CSVReader(new FileReader(updatedCsv.toFile()))) {
             final List<String[]> rows = reader.readAll();
             final CsvHeaders headers = new CsvHeaders(rows.get(0));
@@ -170,6 +176,9 @@ public class MetadataSetterTest {
         });
 
         final Path updatedCsv = FileSystems.getDefault().getPath(OUTPUT_PATH + CSV_NAME);
+
+        assertEquals(ExitCodes.SUCCESS, statusCode);
+
         try (CSVReader reader = new CSVReader(new FileReader(updatedCsv.toFile()))) {
             final List<String[]> rows = reader.readAll();
             final CsvHeaders headers = new CsvHeaders(rows.get(0));
