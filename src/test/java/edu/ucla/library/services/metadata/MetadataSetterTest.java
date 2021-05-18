@@ -134,7 +134,7 @@ public class MetadataSetterTest {
             final List<String[]> rows = reader.readAll();
             final CsvHeaders headers = new CsvHeaders(rows.get(0));
             assertEquals(rows.get(2)[headers.getFormatExtentIndex()], formattedDuration);
-        } catch (IOException details) {
+        } catch (final IOException details) {
             fail(details.getMessage());
         }
     }
@@ -161,7 +161,7 @@ public class MetadataSetterTest {
             final CsvHeaders headers = new CsvHeaders(rows.get(0));
             assertEquals(rows.get(2)[headers.getMediaFormatIndex()], audioFormat);
             assertEquals(rows.get(4)[headers.getMediaFormatIndex()], videoFormat);
-        } catch (IOException details) {
+        } catch (final IOException details) {
             fail(details.getMessage());
         }
     }
@@ -188,7 +188,7 @@ public class MetadataSetterTest {
             final String duration = rows.get(3)[headers.getMediaDurationIndex()].trim();
             final String format = rows.get(3)[headers.getMediaFormatIndex()].trim();
             assertTrue(width.equals(EMPTY) && height.equals(EMPTY) && duration.equals(EMPTY) && format.equals(EMPTY));
-        } catch (IOException details) {
+        } catch (final IOException details) {
             fail(details.getMessage());
         }
     }
