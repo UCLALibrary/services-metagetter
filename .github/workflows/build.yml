@@ -21,8 +21,8 @@ jobs:
         distribution: 'adopt'
         cache: maven
     - name: Do update & install ffmpeg
-        run:|
-          sudo apt-get update
-          sudo apt-get -y install ffmpeg
+      run: |
+        sudo apt-get update
+        sudo apt-get install ffmpeg
     - name: Build with Maven
       run: mvn package 
