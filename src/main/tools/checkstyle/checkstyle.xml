@@ -7,7 +7,7 @@
 <module name="Checker">
   <property name="severity" value="warning" />
   <module name="LineLength">
-    <property name="id" value="lineLengthChecker" />
+    <property name="id" value="lineLengthChecker"/>
     <property name="max" value="120" />
     <property name="fileExtensions" value="java, py, sh, txt" />
   </module>
@@ -97,7 +97,7 @@
   </module>
   <module name="SuppressWarningsFilter" />
   <module name="NewlineAtEndOfFile">
-    <property name="id" value="newLineAtEndOfFileChecker" />
+    <property name="id" value="newLineAtEndOfFileChecker"/>
     <property name="fileExtensions" value="java,css,js,xml,html,default,tmpl,properties" />
   </module>
 </module>

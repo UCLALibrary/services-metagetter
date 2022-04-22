@@ -127,11 +127,14 @@ public class MetadataSetterTest {
         // Nb: value comes from src/test/resources/media/ephraim/audio/21198-zz000954s4-2-submaster.mp3
         final String formattedDuration = "12m 37s";
         final Path updatedCsv = FileSystems.getDefault().getPath(OUTPUT_PATH + CSV_NAME);
+
+        assertEquals(ExitCodes.SUCCESS, statusCode);
+
         try (CSVReader reader = new CSVReader(new FileReader(updatedCsv.toFile()))) {
             final List<String[]> rows = reader.readAll();
             final CsvHeaders headers = new CsvHeaders(rows.get(0));
             assertEquals(rows.get(2)[headers.getFormatExtentIndex()], formattedDuration);
-        } catch (IOException details) {
+        } catch (final IOException details) {
             fail(details.getMessage());
         }
     }
@@ -150,12 +153,15 @@ public class MetadataSetterTest {
         // Nb: value comes from src/test/resources/media/ephraim/video/crowd.mpg
         final String videoFormat = "video/mpeg";
         final Path updatedCsv = FileSystems.getDefault().getPath(OUTPUT_PATH + CSV_NAME);
+
+        assertEquals(ExitCodes.SUCCESS, statusCode);
+
         try (CSVReader reader = new CSVReader(new FileReader(updatedCsv.toFile()))) {
             final List<String[]> rows = reader.readAll();
             final CsvHeaders headers = new CsvHeaders(rows.get(0));
             assertEquals(rows.get(2)[headers.getMediaFormatIndex()], audioFormat);
             assertEquals(rows.get(4)[headers.getMediaFormatIndex()], videoFormat);
-        } catch (IOException details) {
+        } catch (final IOException details) {
             fail(details.getMessage());
         }
     }
@@ -170,6 +176,9 @@ public class MetadataSetterTest {
         });
 
         final Path updatedCsv = FileSystems.getDefault().getPath(OUTPUT_PATH + CSV_NAME);
+
+        assertEquals(ExitCodes.SUCCESS, statusCode);
+
         try (CSVReader reader = new CSVReader(new FileReader(updatedCsv.toFile()))) {
             final List<String[]> rows = reader.readAll();
             final CsvHeaders headers = new CsvHeaders(rows.get(0));
@@ -179,7 +188,7 @@ public class MetadataSetterTest {
             final String duration = rows.get(3)[headers.getMediaDurationIndex()].trim();
             final String format = rows.get(3)[headers.getMediaFormatIndex()].trim();
             assertTrue(width.equals(EMPTY) && height.equals(EMPTY) && duration.equals(EMPTY) && format.equals(EMPTY));
-        } catch (IOException details) {
+        } catch (final IOException details) {
             fail(details.getMessage());
         }
     }
