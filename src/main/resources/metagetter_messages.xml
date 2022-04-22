@@ -8,7 +8,7 @@
 
 <properties>
   <entry key="message-class-name">edu.ucla.library.services.metadata.MessageCodes</entry>
-  
+
   <entry key="MG-000">{}</entry>
   <entry key="MG-100">File path must exist: {}</entry>
   <entry key="MG-101">Problem reading file or walking the supplied directory for files: {}</entry>

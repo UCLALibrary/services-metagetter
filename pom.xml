@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.ucla.library</groupId>
@@ -54,19 +53,17 @@
   </developers>
 
   <properties>
-    <ffmpeg.version>0.6.2</ffmpeg.version>
-    <opencsv.version>4.6</opencsv.version>
-    <picoli.version>4.5.1</picoli.version>
-    <freelib.utils.version>2.1.0</freelib.utils.version>
+    <ffmpeg.version>0.7.0</ffmpeg.version>
+    <opencsv.version>5.6</opencsv.version>
+    <picoli.version>4.6.3</picoli.version>
+    <freelib.utils.version>3.0.1</freelib.utils.version>
 
     <!-- Dependencies for testing -->
     <system-lambda.version>1.1.0</system-lambda.version>
     <system-rules.version>1.19.0</system-rules.version>
 
     <!-- Plugin versions -->
-    <freelib.maven.version>0.1.2</freelib.maven.version>
-    <maven.shade.plugin>3.2.4</maven.shade.plugin>
-    <codacy.version>1.2.0</codacy.version>
+    <maven.shade.plugin>3.3.0</maven.shade.plugin>
   </properties>
 
   <dependencies>
@@ -123,34 +120,14 @@
       <plugin>
         <groupId>info.freelibrary</groupId>
         <artifactId>freelib-maven-plugins</artifactId>
-        <version>${freelib.maven.version}</version>
-        <executions>
-          <execution>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>generate-codes</goal>
-            </goals>
-            <configuration>
-              <generatedSourcesDirectory>${project.basedir}/src/main/generated</generatedSourcesDirectory>
-              <messageFiles>
-                <messageFile>${project.basedir}/src/main/resources/metagetter_messages.xml</messageFile>
-              </messageFiles>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <includes>
-            <include>**/*Test.java</include>
-          </includes>
           <argLine>${jacoco.agent.arg}</argLine>
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <version>${maven.shade.plugin}</version>
         <executions>
@@ -160,8 +137,7 @@
             </goals>
             <configuration>
               <transformers>
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <manifestEntries>
                     <Main-Class>edu.ucla.library.services.metadata.MetadataSetter</Main-Class>
                   </manifestEntries>
@@ -174,6 +150,7 @@
                     <exclude>META-INF/LICENSE.txt</exclude>
                     <exclude>META-INF/NOTICE.txt</exclude>
                     <exclude>META-INF/MANIFEST.MF</exclude>
+                    <exclude>META-INF/versions/9/module-info.class</exclude>
                   </excludes>
                 </filter>
               </filters>
@@ -183,24 +160,12 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>com.gavinmogan</groupId>
-        <artifactId>codacy-maven-plugin</artifactId>
-        <version>${codacy.version}</version>
-      </plugin>
-      <plugin>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <configuration>
-          <consoleOutput>true</consoleOutput>
-          <logViolationsToConsole>true</logViolationsToConsole>
-          <violationSeverity>warning</violationSeverity>
-          <includeTestSourceDirectory>true</includeTestSourceDirectory>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-pmd-plugin</artifactId>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <dependencies>
           <dependency>
@@ -215,27 +180,6 @@
             </exclusions>
           </dependency>
         </dependencies>
-        <executions>
-          <execution>
-            <id>unpack-build-resources</id>
-            <phase>generate-resources</phase>
-            <goals>
-              <goal>unpack</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>info.freelibrary</groupId>
-                  <artifactId>freelib-resources</artifactId>
-                  <version>${freelib.resources.version}</version>
-                  <type>jar</type>
-                  <includes>eclipse/**/*,checkstyle/**/*,pmd/**/*,travis/**/*</includes>
-                  <outputDirectory>${basedir}/target/build-resources</outputDirectory>
-                </artifactItem>
-              </artifactItems>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
     <resources>
@@ -254,10 +198,55 @@
     </resources>
   </build>
 
+  <profiles>
+    <profile>
+      <id>snyk-check</id>
+      <activation>
+        <property>
+          <name>env.SNYK_TOKEN</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.snyk</groupId>
+            <artifactId>snyk-maven-plugin</artifactId>
+            <!-- Configurations have to be overridden in the executions' configuration elements -->
+            <executions>
+              <execution>
+                <id>snyk-test</id>
+                <goals>
+                  <goal>test</goal>
+                </goals>
+                <configuration>
+                  <args>
+                    <arg>--org=${env.UCLALIBRARY_SNYK_ORG}</arg>
+                    <arg>--fail-on=all</arg>
+                  </args>
+                </configuration>
+              </execution>
+              <execution>
+                <id>snyk-monitor</id>
+                <goals>
+                  <goal>monitor</goal>
+                </goals>
+                <configuration>
+                  <args>
+                    <arg>--org=${env.UCLALIBRARY_SNYK_ORG}</arg>
+                  </args>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
   <parent>
     <artifactId>freelib-parent</artifactId>
     <groupId>info.freelibrary</groupId>
-    <version>5.2.1</version>
+    <version>7.2.2</version>
   </parent>
 
 </project>
