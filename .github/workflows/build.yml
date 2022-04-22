@@ -25,4 +25,4 @@ jobs:
         sudo apt-get update
         sudo apt-get install ffmpeg
     - name: Build with Maven
-      run: mvn package 
+      run: mvn -ntp package 

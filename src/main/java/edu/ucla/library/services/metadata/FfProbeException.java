@@ -15,6 +15,9 @@ import info.freelibrary.util.LoggerFactory;
  */
 public class FfProbeException extends I18nException {
 
+    /**
+     * Logger for the FfProbeException.
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(FfProbeException.class, MessageCodes.BUNDLE);
 
     /**
