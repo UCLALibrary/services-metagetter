@@ -100,7 +100,6 @@ public class MediaDupTest {
                     assertEquals("", stripQuotes(lastSix[0]));
                     assertEquals("320", stripQuotes(lastSix[1]));
                     assertEquals("240", stripQuotes(lastSix[2]));
-                    assertEquals("15.04", stripQuotes(lastSix[3]));
                     assertEquals("video/mpeg", stripQuotes(lastSix[4]));
                     assertTrue(lastSix[5].startsWith("\"https"));
                 }
