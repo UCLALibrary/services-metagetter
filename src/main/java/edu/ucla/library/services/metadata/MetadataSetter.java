@@ -315,7 +315,7 @@ public final class MetadataSetter implements Callable<Integer> {
                     aRow[myCsvHeaders.getFormatExtentIndex()] = formattedDuration.toString().trim();
                 }
 
-                formatOffset = myCsvHeaders.getMediaDurationIndex() != -1 ? myCsvHeaders.getMediaFormatIndex()
+                formatOffset = myCsvHeaders.getMediaFormatIndex() != -1 ? myCsvHeaders.getMediaFormatIndex()
                         : aRow.length - Constants.FORMAT_OFFSET;
                 aRow[formatOffset] = mimeType;
 
