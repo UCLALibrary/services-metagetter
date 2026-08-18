@@ -35,7 +35,7 @@ import picocli.CommandLine.Parameters;
 /**
  * An application that adds A/V metadata values to a CSV file.
  */
-@SuppressWarnings("PMD.SystemPrintln")
+@SuppressWarnings({ "PMD.SystemPrintln", "PMD.GodClass" })
 public final class MetadataSetter implements Callable<Integer> {
 
     /**
@@ -199,7 +199,7 @@ public final class MetadataSetter implements Callable<Integer> {
             if (!hasAllMetas) {
                 output.add(buildHeaderRow(input.get(0)));
             } else {
-                output.add(input.get(0));
+                output.add(input.get(0)); // Get existing headers
             }
 
             for (int index = 1; index < input.size(); index++) {
@@ -294,9 +294,13 @@ public final class MetadataSetter implements Callable<Integer> {
             final FFmpegProbeResult probeResult = ffprobe.probe(filePath.toString());
             final FFmpegFormat format = probeResult.getFormat();
             final String mimeType = Files.probeContentType(filePath);
+            final int durationOffset;
+            final int formatOffset;
 
             if (mimeType.contains("audio") || mimeType.contains("video")) {
-                aRow[aRow.length - Constants.DURATION_OFFSET] = String.valueOf(format.duration);
+                durationOffset = myCsvHeaders.getMediaDurationIndex() != -1 ? myCsvHeaders.getMediaDurationIndex()
+                        : aRow.length - Constants.DURATION_OFFSET;
+                aRow[durationOffset] = String.valueOf(format.duration);
 
                 if (myCsvHeaders.hasFormatExtentIndex() &&
                         aRow[myCsvHeaders.getFormatExtentIndex()].trim().equals(EMPTY)) {
@@ -311,16 +315,22 @@ public final class MetadataSetter implements Callable<Integer> {
                     aRow[myCsvHeaders.getFormatExtentIndex()] = formattedDuration.toString().trim();
                 }
 
-                aRow[aRow.length - Constants.FORMAT_OFFSET] = mimeType;
+                formatOffset = myCsvHeaders.getMediaFormatIndex() != -1 ? myCsvHeaders.getMediaFormatIndex()
+                        : aRow.length - Constants.FORMAT_OFFSET;
+                aRow[formatOffset] = mimeType;
 
                 if (probeResult.getStreams() != null) {
                     for (final FFmpegStream stream : probeResult.getStreams()) {
                         if (stream.width != 0) {
-                            aRow[aRow.length - Constants.WIDTH_OFFSET] = String.valueOf(stream.width);
+                            final int widthOffset = myCsvHeaders.getMediaWidthIndex() != -1
+                                    ? myCsvHeaders.getMediaWidthIndex() : aRow.length - Constants.WIDTH_OFFSET;
+                            aRow[widthOffset] = String.valueOf(stream.width);
                         }
 
                         if (stream.height != 0) {
-                            aRow[aRow.length - Constants.HEIGHT_OFFSET] = String.valueOf(stream.height);
+                            final int heightOffset = myCsvHeaders.getMediaHeightIndex() != -1
+                                    ? myCsvHeaders.getMediaHeightIndex() : aRow.length - Constants.HEIGHT_OFFSET;
+                            aRow[heightOffset] = String.valueOf(stream.height);
                         }
                     }
                 }
